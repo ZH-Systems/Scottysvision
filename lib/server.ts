@@ -31,8 +31,18 @@ export function admin() {
   });
 }
 export async function identity(req: Request, write = false) {
-  if (write && req.headers.get("origin") !== new URL(req.url).origin)
-    throw new AppError(403, "Open Vision in its own tab.");
+  if (write) {
+    const target = new URL(req.url);
+    // Next may normalize Request.url to localhost behind its Node/Vercel adapter.
+    // Host is the destination requested by the browser, not a submitted owner ID.
+    const host = req.headers.get("host");
+    const origin = req.headers.get("origin");
+    if (
+      origin !== target.origin &&
+      (!host || origin !== target.protocol + "//" + host)
+    )
+      throw new AppError(403, "Open Vision in its own tab.");
+  }
   const token = req.headers.get("authorization")?.replace(/^Bearer /i, "");
   if (!token)
     throw new AppError(401, "Sign in from Sync to back up this device.");

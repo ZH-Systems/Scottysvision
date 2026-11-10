@@ -102,7 +102,7 @@ npm run build
 npm run verify
 ```
 
-Tests execute the Postgres migration against PGlite and check RLS, immutable conflicts/rollback, pagination, catalog overlays and workbook locking. Other tests retain original costing/conversion assertions and cover waste snapshots, correction handling and wing deadlines/conflicts. Production Supabase Auth/Storage and Google writes require configured external services and are not claimed tested without them.
+Tests execute the Postgres migration against PGlite and check RLS, immutable conflicts/rollback, pagination, catalog overlays and workbook locking. Other tests retain original costing/conversion assertions and cover waste snapshots, correction handling and wing deadlines/conflicts. `npm run verify` also starts the production server and checks the React shell, public-only configuration, authentication on data APIs, foreign-origin write rejection and the versioned offline worker. Production Supabase Auth/Storage and Google writes require configured external services and are not claimed tested without them.
 
 ## Source layout
 
