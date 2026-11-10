@@ -1,0 +1,127 @@
+import assert from "node:assert/strict";
+import {
+  convert,
+  numeric,
+  recipeCost,
+  validateRecipe,
+  recipeHeads,
+  mergeEvents,
+  invoicePrice,
+  normalizeCatalog,
+  PIZZA_SIZES,
+} from "../lib/core/kitchen.mjs";
+assert.equal(convert(250, "g", "kg"), 0.25);
+assert.equal(convert(1, "lb", "g"), 453.59237);
+assert.equal(convert(1, "g", "mL"), null);
+assert.equal(convert(2, "ea", "g", { gramsEach: 80 }), 160);
+assert.equal(convert(2, "ea", "g"), null);
+assert.equal(numeric(""), null);
+assert.equal(numeric("0"), 0);
+assert.throws(() => numeric("-1"));
+assert.throws(() => numeric("12abc"));
+assert.throws(() => numeric("=2+2"));
+const catalog = [
+    {
+      id: "cheese",
+      name: "Cheese",
+      baseUnit: "kg",
+      cost: 12,
+      confirmed: true,
+      basis: "Current",
+    },
+  ],
+  r = {
+    name: "Test",
+    yieldQty: "2",
+    sellPrice: "5",
+    lines: [{ itemId: "cheese", qty: "250", unit: "g" }],
+  };
+const c = recipeCost(r, catalog);
+assert.equal(c.total, 3);
+assert.equal(c.perPortion, 1.5);
+assert.equal(c.margin, 70);
+catalog[0].cost = 20;
+assert.equal(c.total, 3);
+assert.equal(recipeCost(r, catalog).total, 5);
+catalog[0].confirmed = false;
+assert.equal(recipeCost(r, catalog).total, null);
+assert.equal(recipeCost(r, catalog).subtotal, 0);
+assert.equal(recipeCost(r, catalog).margin, null);
+r.lines[0].overrideCost = "0";
+r.lines[0].overrideReviewed = true;
+r.lines[0].overrideUnit = "kg";
+assert.equal(recipeCost(r, catalog).total, 0);
+assert.equal(recipeCost({ ...r, yieldQty: "" }, catalog).perPortion, null);
+assert.throws(() =>
+  validateRecipe({ ...r, lines: [{ itemId: "cheese", qty: "", unit: "g" }] }),
+);
+const events = [
+  {
+    id: "a",
+    entityId: "r",
+    kind: "recipe",
+    at: 1,
+    data: { parentRevision: null },
+  },
+  {
+    id: "b",
+    entityId: "r",
+    kind: "recipe",
+    at: 2,
+    data: { parentRevision: "a" },
+  },
+  {
+    id: "c",
+    entityId: "r",
+    kind: "recipe",
+    at: 3,
+    data: { parentRevision: "a" },
+  },
+];
+assert.equal(recipeHeads(events, "r").length, 2);
+assert.equal(mergeEvents(events, [events[0]]).length, 3);
+assert.throws(() => mergeEvents(events, [{ ...events[0], at: 20 }]));
+assert.equal(
+  invoicePrice({
+    packages: "2",
+    packQty: "5",
+    packUnit: "kg",
+    netSubtotal: "100",
+  }).cost,
+  10,
+);
+assert.equal(
+  invoicePrice({
+    packages: "",
+    packQty: "5",
+    packUnit: "kg",
+    netSubtotal: "100",
+  }),
+  null,
+);
+assert.equal(
+  invoicePrice({
+    packages: "2",
+    packQty: "5",
+    packUnit: "kg",
+    netSubtotal: "",
+  }),
+  null,
+);
+assert.equal(PIZZA_SIZES.length, 6);
+const n = normalizeCatalog(
+  [
+    [],
+    [],
+    ["Food", "", "A", "", "10", "g", "1", 12, 0.02],
+    ["Food", "", "A", "", "20", "g", "1", 12, 0.02],
+  ],
+  [],
+);
+assert.equal(n.length, 2);
+assert.notEqual(n[0].name, n[1].name);
+assert.equal(n[0].confirmed, false);
+assert.equal(n[0].id, "VOS-MASTER-3");
+console.log(
+  "PASS: recipe costing, unknowns, measured conversions, immutable snapshots, branch conflicts, duplicate protection, invoice package prices and source normalisation.",
+);

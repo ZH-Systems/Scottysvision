@@ -1,0 +1,6 @@
+archive/
+node_modules/
+.next/
+package-lock.json
+public/ingredient-cache.json
+components/kitchen/module-styles.ts

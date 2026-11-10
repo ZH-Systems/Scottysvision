@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Scotty's touch-friendly, offline wing preparation and cooling log.">
+<meta name="theme-color" content="#b94313">
+<title>Wing Check • Scotty's on King</title>
+<style>:root{--ink:#252422;--muted:#716c66;--bg:#f5f2ec;--paper:#fff;--orange:#b94313;--soft:#fff0df;--line:#e4dfd6;--green:#146741;--greenbg:#e9f5ed;--red:#aa2830;--redbg:#fff0ef;--amber:#88520c;--amberbg:#fff5df;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);font-size:16px}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button,a,input,select,textarea{touch-action:manipulation}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #246cbc;outline-offset:3px}.top{background:var(--paper);border-bottom:1px solid var(--line)}.top-inner{max-width:1180px;margin:auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);font-weight:900;letter-spacing:.06em;line-height:1.05;font-size:20px}.brand small{display:block;font-size:10px;letter-spacing:.28em;margin-top:5px}.brand-mark{width:39px;height:39px;background:var(--orange);color:white;display:grid;place-items:center;border-radius:11px;font-size:28px;font-style:italic;letter-spacing:0}.top-actions{display:flex;align-items:center;gap:8px}.local-badge{font-size:12px;color:var(--green);background:var(--greenbg);padding:7px 10px;border-radius:30px;margin-right:6px}.quiet,.secondary{background:white;border:1px solid var(--line);color:var(--ink);padding:11px 15px;border-radius:9px;min-height:44px;font-weight:650;font-size:14px}.quiet{border-color:transparent}.quiet:hover,.secondary:hover{background:#f4f0e9}.primary{background:var(--orange);border:1px solid var(--orange);color:#fff;border-radius:10px;padding:15px 22px;min-height:52px;font-weight:750;box-shadow:0 2px 0 #0000000d}.primary:hover{background:#9d350b}.primary.large{min-height:60px;font-size:18px}.danger{background:var(--red);border-color:var(--red)}.text-button{border:0;background:transparent;color:var(--orange);padding:6px 0;text-decoration:underline;text-underline-offset:4px;font-size:13px;min-height:32px}.footer{max-width:1124px;padding:22px 0 28px;margin:0 auto;display:flex;justify-content:space-between;gap:18px;align-items:center;font-size:12px;color:var(--muted)}.footer>span:first-child{font-weight:750;color:var(--orange)}main{max-width:1124px;margin:36px auto 0;min-height:60vh}.eyebrow{font-size:12px;color:var(--orange);font-weight:850;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}h1{font-size:36px;letter-spacing:-.035em;margin:0 0 10px;line-height:1.15}h2{font-size:24px;margin:0 0 10px;letter-spacing:-.025em}h3{margin:0 0 9px;font-size:17px}p{line-height:1.55;color:var(--muted);margin:0 0 15px}.page-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:24px}.page-heading p{margin-bottom:0}.empty{background:white;border:1px solid var(--line);border-radius:20px;display:grid;grid-template-columns:1.15fr .85fr;overflow:hidden;min-height:350px}.empty-copy{padding:48px}.empty-copy h2{font-size:30px;line-height:1.2;max-width:380px}.empty-copy p{max-width:390px}.empty-steps{background:#eee8de;padding:45px;display:flex;flex-direction:column;justify-content:center;gap:22px}.simple-step{display:flex;align-items:center;gap:15px}.simple-step .number{flex:0 0 35px;height:35px;border-radius:50%;border:1px solid #d6c9b8;color:var(--orange);display:grid;place-items:center;font-weight:850;background:#f9f5ee}.simple-step strong{display:block;font-size:15px}.simple-step small{display:block;color:var(--muted);margin-top:3px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}.card{border:1px solid var(--line);border-radius:16px;background:white;padding:24px;box-shadow:0 3px 12px #36291a03}.card h2{font-size:22px}.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:17px}.tag{font-size:11px;font-weight:800;padding:6px 9px;border-radius:6px;background:#f2eee8;color:#665e52;text-transform:uppercase;letter-spacing:.04em}.tag.good{color:var(--green);background:var(--greenbg)}.tag.warn{color:var(--amber);background:var(--amberbg)}.tag.bad{color:var(--red);background:var(--redbg)}.card-meta{font-size:12px;color:var(--muted);margin:8px 0 18px}.card .primary{width:100%}.card-time{font-variant-numeric:tabular-nums;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.1}.back{border:0;color:var(--muted);background:transparent;padding:0 0 16px;min-height:36px;font-size:14px}.back:hover{color:var(--orange)}.two-column{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(270px,1fr);gap:24px;align-items:start}.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:30px}.side-panel{border-radius:15px;padding:23px;background:#eee8de}.side-panel p{font-size:14px}.side-panel ul{margin:0;padding-left:20px;line-height:1.7;font-size:14px;color:#514b43}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:20px}label{font-size:14px;font-weight:750}input,select,textarea{width:100%;border:1px solid #cbc5bc;border-radius:9px;background:white;padding:13px 14px;min-height:48px;color:var(--ink)}input::placeholder{color:#a49b90}input:focus,select:focus,textarea:focus{border-color:var(--orange);outline:2px solid #b943131c}.field small,.help{font-size:12px;color:var(--muted);line-height:1.5}.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px}.actions>*{flex:1}.actions>.text-button{flex:0 0 auto}.form-error{background:var(--redbg);border:1px solid #e8b3b3;border-radius:9px;color:var(--red);padding:12px 14px;margin:14px 0;font-size:14px}.form-error:empty{display:none}details{margin:18px 0;border-top:1px solid var(--line);padding-top:16px}summary{font-size:14px;font-weight:700;cursor:pointer;color:#686052}details[open] summary{margin-bottom:18px}.tray-labels{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tray-labels input{min-height:42px;padding:10px;font-size:14px}.hero-panel{text-align:center;padding:40px 30px;background:white;border:1px solid var(--line);border-radius:18px}.hero-panel h1{font-size:38px}.timer{font-size:76px;letter-spacing:-.05em;font-weight:800;font-variant-numeric:tabular-nums;margin:20px 0 8px;line-height:1.1}.timer-label{color:var(--muted);font-size:14px}.hero-panel .actions{max-width:540px;margin:28px auto 0}.notice{padding:14px 17px;border-radius:10px;font-size:14px;line-height:1.5;margin-bottom:20px;background:var(--amberbg);color:var(--amber)}.notice.bad{background:var(--redbg);color:var(--red);border:1px solid #edbdbb}.notice.good{background:var(--greenbg);color:var(--green)}.notice p{color:inherit;font-size:14px;margin:6px 0 0}.notice ul{padding-left:20px;margin:7px 0}.readings{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin:25px 0}.reading{background:white;border:1px solid var(--line);padding:17px;border-radius:12px}.reading.good{border-color:#afd4bb;background:#f7fcf8}.reading .reading-temp{font-size:30px;font-weight:800;letter-spacing:-.03em;margin:6px 0}.reading small{font-size:12px;color:var(--muted)}.reading strong{font-size:13px}.step-progress{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);margin-bottom:12px}.progress-track{display:flex;gap:5px;margin-bottom:25px}.progress-track i{display:block;height:5px;flex:1;background:#e9e3da;border-radius:3px}.progress-track i.done{background:var(--green)}.measure-card{max-width:610px;margin:auto;background:white;border:1px solid var(--line);border-radius:20px;padding:34px}.measure-card h1{font-size:34px}.measure-card .temp-input{font-size:54px;letter-spacing:-.04em;font-weight:750;text-align:center;min-height:100px;max-width:260px;padding:10px}.temp-wrap{display:flex;justify-content:center;gap:13px;align-items:center;margin:24px 0 8px}.temp-wrap>span{font-size:32px;color:var(--muted)}.temp-hint{text-align:center;color:var(--muted);font-size:13px}.check-label{display:flex;align-items:center;gap:13px;border:1px solid var(--line);border-radius:10px;padding:15px;line-height:1.4;margin:20px 0;font-size:15px;font-weight:650}.check-label input{width:23px;height:23px;min-height:23px;flex:0 0 23px;accent-color:var(--green)}.measure-card .primary{width:100%;margin-top:18px}.measure-card .saved-at{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}.status-line{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:15px 0;border-top:1px solid var(--line);font-size:14px}.status-line span:last-child{font-variant-numeric:tabular-nums;font-weight:750}.batch-tools{display:flex;justify-content:space-between;gap:15px;align-items:center;margin:22px 0}.batch-tools>div{display:flex;gap:15px}.small-button{font-size:13px;min-height:40px;padding:8px 13px}.archived{margin-top:28px}.history-table{width:100%;border-collapse:collapse;font-size:12px}.history-table th,.history-table td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:top}.history-table th{color:var(--muted);font-size:11px;text-transform:uppercase}.history-wrap{overflow:auto}.muted{color:var(--muted)}.full{width:100%}.chip-row{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.chip{padding:8px 12px;background:#f6f3ee;border:1px solid var(--line);border-radius:9px;font-size:13px}dialog{max-width:760px;width:calc(100% - 32px);border:1px solid var(--line);border-radius:18px;padding:32px;color:var(--ink);box-shadow:0 20px 100px #0003}dialog::backdrop{background:#29231d66}.modal-close{position:absolute;right:13px;top:10px;background:transparent;border:0;min-height:36px;min-width:36px;font-size:27px;color:var(--muted)}dialog h2{padding-right:25px}dialog .actions{margin:16px 0}.modal-section{padding:20px 0;border-top:1px solid var(--line)}.modal-section h3{font-size:16px}.modal-section p{font-size:13px}.storage-error{background:var(--red);color:white;padding:13px;text-align:center;font-size:14px}.storage-error[hidden]{display:none}#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:white;border-radius:10px;padding:12px 20px;opacity:0;pointer-events:none;transition:.2s;z-index:20;font-size:14px}#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}#printArea{display:none}.record-list{list-style:none;padding:0;margin:0}.record-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.record-list small{display:block;color:var(--muted);font-size:12px;margin-top:4px}kbd{font:inherit;font-weight:700}.saved-warning{color:var(--red)}.source-links{font-size:12px;line-height:1.8}.source-links a{color:var(--orange)}.blank-space{height:20px}.button-pair{display:flex;gap:10px;margin-top:14px}.button-pair>*{flex:1}.mini{font-size:12px}.numbered-steps{counter-reset:steps}.numbered-steps p{padding-left:32px;position:relative;margin-bottom:16px}.numbered-steps p:before{counter-increment:steps;content:counter(steps);position:absolute;left:0;font-weight:900;color:var(--orange)}
+@media(max-width:1190px){main,.footer{margin-left:24px;margin-right:24px}.footer{padding-left:0;padding-right:0}}@media(max-width:760px){.top-inner{padding:14px 16px;align-items:flex-start}.top-actions{gap:2px;flex-wrap:wrap;justify-content:flex-end}.local-badge{display:none}.quiet{font-size:12px;padding:9px}.brand{font-size:16px}.brand-mark{width:32px;height:32px;font-size:24px}main{margin:24px 16px 0}.footer{margin:20px 16px;display:block}.footer>*{display:block;margin:8px 0}h1{font-size:30px}.page-heading{display:block}.page-heading>.primary{margin-top:18px;width:100%}.empty{display:block}.empty-copy{padding:28px}.empty-steps{padding:28px;gap:16px}.two-column{display:block}.side-panel{margin-top:20px}.panel{padding:24px}.row{grid-template-columns:1fr;gap:0}.hero-panel{padding:32px 20px}.hero-panel h1{font-size:31px}.timer{font-size:61px}.measure-card{padding:26px 22px}.batch-tools{display:block}.batch-tools>div{margin-top:12px}.readings{grid-template-columns:1fr 1fr}dialog{padding:26px 22px}.actions{gap:10px}.actions>*{flex:1 0 100%}}@media print{@page{size:legal landscape;margin:10mm}body{background:white}.top,main,.footer,dialog,#toast,.storage-error{display:none!important}#printArea{display:block;font:10pt system-ui;color:#000}#printArea h1{font-size:20pt}#printArea table{border-collapse:collapse;width:100%;font-size:8pt}#printArea th,#printArea td{border:1px solid #888;padding:5px;text-align:left}#printArea .print-note{font-size:9pt;margin:10px 0}#printArea .voided{text-decoration:line-through;color:#777}}
+/* Large, widely spaced controls for the small kitchen tablet. */
+.touch-menu{display:none}
+.measurement-info p{margin-bottom:8px}
+.probe-reminder{font-size:16px;line-height:1.45;color:var(--muted);margin:5px 0 15px}
+.measurement-temp{margin:12px 0 16px}
+.measure-card .temp-wrap{gap:8px;margin:10px 0}
+.measure-card .temp-input{width:100%;min-width:0;max-width:220px;min-height:82px;font-size:52px;caret-color:transparent;background:#fffaf3}
+.measure-card .temp-wrap>span{font-size:25px}
+.temp-edit{flex:0 0 64px;min-width:64px;min-height:64px;border:1px solid var(--line);border-radius:12px;background:#f5f1e9;font-size:29px;font-weight:750;color:var(--ink);touch-action:manipulation}
+.temp-edit.clear-key{font-size:16px}
+.temperature-keypad{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+.number-key{min-height:64px;min-width:64px;border:1px solid #ccc5bb;border-bottom-width:3px;border-radius:12px;background:white;color:var(--ink);font-size:29px;font-weight:750;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.number-key:active,.temp-edit:active{background:#ffe3c8;border-color:var(--orange);transform:translateY(1px)}
+.number-key.delete-key{background:#f3eee6;font-size:30px}
+.measurement-confirm .check-label{margin:12px 0}
+.measurement-submit>.primary{width:100%;min-height:64px;font-size:20px}
+@media screen and (max-width:1100px),screen and (pointer:coarse){
+ :root{font-size:18px}
+ button,input,select,textarea{font-size:18px}
+ button,.primary,.primary.large,.secondary,.small-button,.quiet,.text-button,.back{min-height:64px;min-width:64px}
+ .primary,.primary.large,.secondary{font-size:19px;padding:15px 18px}
+ .top-inner{padding:8px 12px;align-items:center;gap:10px}
+ .brand{font-size:16px;min-height:64px;flex-shrink:0}
+ .brand-mark{width:36px;height:36px;font-size:27px}
+ .brand small{font-size:10px}
+ .top-actions{gap:8px;flex-wrap:nowrap}
+ .quiet{font-size:16px;padding:10px;min-width:72px}
+ .local-badge,.desktop-menu{display:none}
+ .touch-menu{display:inline}
+ main{margin:18px 14px 0;min-width:0}
+ h1{font-size:32px;line-height:1.16}
+ h2{font-size:26px}
+ p{font-size:18px;line-height:1.5}
+ label{font-size:19px}
+ input,select,textarea{min-height:64px;font-size:21px;padding:14px}
+ .field{margin-bottom:22px;gap:10px}
+ .field small,.help,.mini{font-size:16px;line-height:1.45}
+ .row,.two-column{display:block}
+ .panel,.hero-panel{padding:22px 18px}
+ .side-panel{margin-top:20px;padding:22px}
+ .side-panel p,.side-panel ul{font-size:17px}
+ .page-heading{display:block;margin-bottom:22px}
+ .page-heading>.primary{margin-top:18px;width:100%}
+ .cards{grid-template-columns:1fr}
+ .card{padding:22px}
+ .card h2{font-size:25px}
+ .card .card-meta{font-size:16px}
+ .card .mini{font-size:16px}
+ .tag{font-size:13px}
+ .eyebrow{font-size:14px}
+ .actions{display:flex;gap:14px}
+ .actions>*{flex:1 0 100%}
+ details{padding-top:12px}
+ summary{display:flex;align-items:center;min-height:64px;font-size:18px;padding:10px 0}
+ summary:before{content:'▸';margin-right:10px}
+ details[open] summary:before{content:'▾'}
+ .tray-labels{grid-template-columns:1fr}
+ .tray-labels input{min-height:64px;font-size:20px}
+ .back{font-size:18px;padding:8px 0;text-align:left;margin-bottom:10px}
+ .check-label{min-height:80px;font-size:18px;padding:16px;gap:16px;cursor:pointer}
+ .check-label input{height:32px;width:32px;min-height:32px;min-width:32px;flex-basis:32px}
+ .footer{font-size:16px;line-height:1.45;margin:20px 14px;display:block;padding:10px 0 24px}
+ .footer>*{display:block;margin:8px 0}
+ .footer .text-button{font-size:17px;text-align:left}
+ .empty{display:block}
+ .empty-copy{padding:26px 22px}
+ .empty-copy h2{font-size:28px}
+ .empty-steps{padding:25px 22px;gap:22px}
+ .simple-step strong{font-size:18px}
+ .simple-step small{font-size:16px}
+ .simple-step .number{height:42px;flex-basis:42px}
+ .batch-tools{display:block;font-size:16px}
+ .batch-tools>div{display:block}
+ .batch-tools button{margin-top:12px;width:100%}
+ .readings{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .reading strong{font-size:17px}
+ .reading small{font-size:15px}
+ .reading .reading-temp{font-size:34px}
+ .timer-label{font-size:17px}
+ .notice,.notice p{font-size:17px}
+ .form-error{font-size:17px;line-height:1.45}
+ dialog{padding:28px 18px;max-height:calc(100vh - 24px);overflow:auto;max-width:calc(100% - 24px)}
+ dialog h2{padding-right:60px;font-size:26px}
+ .modal-close{height:64px;width:64px;top:2px;right:2px;font-size:34px}
+ .modal-section h3{font-size:21px}
+ .modal-section p{font-size:17px}
+ .record-list li{align-items:flex-start}
+ .record-list small{font-size:15px}
+ .history-table{font-size:16px}
+ .history-table th{font-size:14px}
+ .history-table th,.history-table td{padding:14px 10px}
+ .source-links{font-size:17px}
+ #toast{width:calc(100% - 32px);font-size:17px;text-align:center;bottom:116px}
+ body[data-view=measure] .top,body[data-view=measure] .footer{display:none}
+ body[data-view=measure] main{margin:8px 12px 0;padding-bottom:128px;min-height:calc(100vh - 20px)}
+ body[data-view=measure] .back{margin-bottom:8px;min-height:56px;font-size:18px}
+ .measure-card{max-width:580px;border-radius:16px;padding:20px 16px}
+ .measure-card h1{font-size:30px;margin-bottom:8px}
+ .measure-card p{font-size:18px;line-height:1.4}
+ .step-progress{font-size:14px;margin-bottom:8px;letter-spacing:.055em}
+ .progress-track{margin-bottom:14px}
+ .progress-track i{height:7px}
+ .measure-card .temp-input{font-size:49px;min-height:80px;padding:7px}
+ .temp-hint{font-size:15px;line-height:1.4}
+ .measurement-confirm .check-label{margin:12px 0 4px}
+ .measurement-submit{position:fixed;bottom:0;left:0;right:0;z-index:8;background:#fff;border-top:1px solid var(--line);padding:8px 12px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -5px 18px #29231d0b}
+ .measurement-submit>.primary{display:block;max-width:920px;margin:0 auto;min-height:64px;width:100%;font-size:20px}
+ .measurement-submit>.saved-at{margin:5px auto 0;font-size:14px;line-height:20px;text-align:center}
+}
+@media screen and (min-width:720px) and (max-height:720px){
+ body[data-view=measure] main{max-width:960px;margin:4px auto 0;padding-left:12px;padding-right:12px;padding-bottom:120px}
+ body[data-view=measure] .back{margin-bottom:4px}
+ .measure-card{max-width:940px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 28px;padding:18px 22px;align-items:start}
+ .measurement-info{grid-column:1;grid-row:1}
+ .measurement-temp{grid-column:1;grid-row:2;margin:4px 0}
+ .measurement-confirm{grid-column:1;grid-row:3}
+ .temperature-keypad{grid-column:2;grid-row:1/span 3;margin:0;align-self:start}
+ .measure-card .form-error{grid-column:1/-1;margin:6px 0}
+ .measure-card .temp-wrap{margin:7px 0}
+ .measure-card .temp-input{min-height:76px;font-size:48px}
+ .probe-reminder{margin-bottom:4px}
+ .measure-card p{margin-bottom:6px}
+ .measurement-confirm .check-label{margin:0;min-height:70px;padding:10px;font-size:17px}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-inner"><a href="#" id="home" class="brand"><span class="brand-mark" aria-hidden="true">S</span><span>SCOTTY'S <small>ON KING</small></span></a><div class="top-actions"><span class="local-badge">Saved on this device</span><button id="sound" class="quiet">Sound off</button><button id="manager" class="quiet" aria-label="Records and backup"><span class="desktop-menu">Records & backup</span><span class="touch-menu">Menu</span></button></div></div></header>
+<div id="storageNotice" class="storage-error" hidden></div>
+<main id="app"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="printArea"></div>
+<footer class="footer"><span>Good Food = Good Mood</span><span>Keep this tab open for on-screen reminders and sound.</span><button id="guidance" class="text-button">Temperature rules</button></footer>
+<dialog id="modal"><button id="closeModal" class="modal-close" aria-label="Close">×</button><div id="modalContent"></div></dialog>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<noscript>This form needs JavaScript enabled. Open this downloaded file in a browser on the tablet.</noscript>
+<script>(function (root) {
+  'use strict';
+  const MIN = 60000, HOUR = 60 * MIN;
+  const TYPES = new Set(['dry_start','dry_end','raw_check','cook_start','oven_out','cook_check','cook_batch_check','cooler_in','cool_check','packed','note','void','clock_fix','discarded']);
+  function uid() { return root.crypto?.randomUUID?.() || 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2); }
+  function event(type, values = {}, now = Date.now()) { return {id:uid(),type,at:now,enteredAt:now,...values}; }
+  function active(batch) { const voids = new Set(batch.events.filter(e=>e.type==='void').map(e=>e.ref)); return batch.events.filter(e=>e.type!=='void'&&!voids.has(e.id)); }
+  function temperature(input) {
+    if (typeof input !== 'string' || !/^-?\d+(?:[.,]\d{1,2})?$/.test(input.trim())) throw Error('Enter the actual wing temperature in °C.');
+    const n=Number(input.trim().replace(',','.'));
+    if (!Number.isFinite(n)||n < -40||n > 120) throw Error('Check the probe is set to °C. Enter a value from -40 to 120°C.');
+    return n;
+  }
+  function fmt(n) { return n==null?'—': Number(n.toFixed(2)).toString(); }
+  const dt = new Intl.DateTimeFormat('en-CA',{timeZone:'America/Toronto',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'});
+  function parts(t) { return Object.fromEntries(dt.formatToParts(t).filter(p=>p.type!=='literal').map(p=>[p.type,p.value])); }
+  function localInput(t) { const p=parts(t);return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}`; }
+  function localTime(t) { if(t==null)return 'Unknown'; const p=parts(t);return `${p.hour}:${p.minute}`; }
+  function localDateTime(t) { if(t==null)return 'Unknown';return localInput(t).replace('T',' '); }
+  function parseLocal(s) {
+    if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(s))throw Error('Enter the actual date and time.');
+    const [y,m,d,h,min]=s.match(/\d+/g).map(Number);const target=Date.UTC(y,m-1,d,h,min);let guess=target;
+    for(let i=0;i<4;i++){const p=parts(guess);guess+=target-Date.UTC(+p.year,+p.month-1,+p.day,+p.hour,+p.minute);}
+    if(localInput(guess)!==s)throw Error('That Toronto date/time is not valid.');
+    return guess;
+  }
+  function evaluate(batch, now = Date.now()) {
+    const ev=active(batch).slice().sort((a,b)=>a.at-b.at);
+    const first=t=>ev.find(e=>e.type===t), last=t=>ev.filter(e=>e.type===t).at(-1);
+    const fixed=last('clock_fix');const out=fixed?fixed.valueAt:first('oven_out')?.at??null;
+    const start=first('cook_start')?.at??null;
+    const dry=first('dry_start')?.at??null;
+    const packed=last('packed');
+    const base={out,start,dry,packed:packed?.at??null,trays:[],reasons:[],allCold:false,nextDue:null,useBy:out==null?null:out+72*HOUR};
+    if(last('discarded'))return {...base,status:'discarded',title:'Discard recorded'};
+    if(out==null && batch.mode!=='existing') {
+      if(start!=null)return {...base,status:'cooking',title:'Oven timer',nextDue:start+20*MIN};
+      if(dry!=null)return {...base,status:'brining',title:'Overnight fridge rest',nextDue:dry+18*HOUR,restEnd:dry+20*HOUR};
+      return {...base,status:'new',title:'Start batch'};
+    }
+    if(out==null)base.reasons.push('Actual oven-out time is missing.');
+    if(out!=null&&out>now)base.reasons.push('Oven-out time is in the future. Check the clock.');
+    if(ev.some(e=>e.type==='raw_check'&&e.c>4))base.reasons.push('Starting wings were above 4°C. Manager review is needed.');
+    if(ev.some(e=>e.type==='note'&&e.flag))base.reasons.push('A manager review was requested.');
+    if(ev.some(e=>e.at>now))base.reasons.push('A record is dated in the future. Check the device clock and actual time.');
+    const group=ev.find(e=>e.type==='cook_batch_check'&&e.c>=74&&e.held15===true&&out!=null&&e.at<=now&&(start==null||e.at>=start));
+    for(const tray of batch.trays) {
+      const cook=ev.find(e=>e.type==='cook_check'&&e.tray===tray.id&&e.c>=74&&e.held15===true&&out!=null&&e.at<=now&&(start==null||e.at>=start))||group;
+      const readings=ev.filter(e=>e.type==='cool_check'&&e.tray===tray.id);
+      const qualifying=readings.filter(e=>out!=null&&cook&&e.at>=out&&e.at>=cook.at&&e.at<=now);
+      const first20=qualifying.find(e=>e.c<=20), first4=qualifying.find(e=>e.c<=4), latest=readings.at(-1);
+      const deadline1=out==null?null:out+2*HOUR;
+      const deadline2=out==null?null:Math.min(out+6*HOUR, first20?first20.at+4*HOUR:Infinity);
+      const errors=[];
+      if(first20&&first20.at>deadline1)errors.push(`${tray.label}: the ≤20°C reading was late.`);
+      else if(!first20&&deadline1!=null&&now>deadline1)errors.push(`${tray.label}: no timely ≤20°C reading.`);
+      if(first4&&first4.at>deadline2)errors.push(`${tray.label}: the ≤4°C reading was late.`);
+      else if(!first4&&deadline2!=null&&now>deadline2)errors.push(`${tray.label}: no timely ≤4°C reading.`);
+      if(first4&&latest?.c>4&&deadline2!=null&&now>deadline2)errors.push(`${tray.label}: above 4°C after the final deadline.`);
+      const cold=!!cook&&!!first20&&!!first4&&latest?.c<=4&&errors.length===0;
+      base.trays.push({...tray,cook,latest,first20,first4,deadline1,deadline2,cold,errors});
+      base.reasons.push(...errors);
+    }
+    base.allCold=base.trays.length>0&&base.trays.every(t=>t.cold);
+    if(packed&&base.allCold&&base.trays.some(t=>t.first4.at>packed.at))base.reasons.push('Packing was recorded before the final cold checks. Review the actual times.');
+    const cookMissing=base.trays.some(t=>!t.cook);
+    if(batch.mode==='existing'&&cookMissing)base.reasons.push('Earlier cooking temperatures are unverified.');
+    if(base.reasons.length)return {...base,status:'review',title:'Hold for manager review',needsCook:cookMissing};
+    if(cookMissing)return {...base,status:'cookcheck',title:'Confirm the cook',needsCook:true};
+    if(base.allCold)return {...base,status:packed?'packed':'cooled',title:packed?'Packed and recorded':'Cooling checks complete'};
+    const cooler=last('cooler_in');const lastCool=last('cool_check');
+    const deadline=Math.min(...base.trays.filter(t=>!t.cold).map(t=>t.first20?t.deadline2:t.deadline1).filter(t=>t!=null));
+    base.nextDue=Math.min((lastCool?.at??cooler?.at??out)+30*MIN,deadline);
+    return {...base,status:cooler?'cooling':'transfer',title:cooler?'Cooling in fridge':'Move trays into the cooler'};
+  }
+  function validateStore(x) {
+    if(!x||x.schema!==1||!Array.isArray(x.batches)||x.batches.length>2000)throw Error('This is not a supported wing-log backup.');
+    const batchIds=new Set();
+    for(const b of x.batches) {
+      if(typeof b.id!=='string'||batchIds.has(b.id)||typeof b.name!=='string'||!Number.isFinite(b.createdAt)||!['normal','existing'].includes(b.mode)||!Array.isArray(b.trays)||b.trays.length<1||b.trays.length>12||!Array.isArray(b.events)||b.events.length>10000)throw Error('The backup has an invalid batch.');
+      batchIds.add(b.id);const trayIds=new Set();
+      for(const t of b.trays){if(typeof t.id!=='string'||trayIds.has(t.id)||typeof t.label!=='string'||t.label.length>100)throw Error('Invalid tray labels.');trayIds.add(t.id);}
+      const ids=new Set();
+      for(const e of b.events){
+        if(!e||!TYPES.has(e.type)||typeof e.id!=='string'||ids.has(e.id)||!Number.isFinite(e.at)||!Number.isFinite(e.enteredAt)||e.at<0||e.enteredAt<0)throw Error('Invalid record in the backup.');
+        ids.add(e.id);if(e.tray&&!trayIds.has(e.tray))throw Error('Unknown tray in backup.');
+        if(['cook_check','cool_check'].includes(e.type)&&!e.tray)throw Error('Missing tray on temperature record.');
+        if(['raw_check','cook_check','cook_batch_check','cool_check'].includes(e.type)&&(!Number.isFinite(e.c)||e.c< -40||e.c>120))throw Error('Invalid temperature record.');
+        if(['cook_check','cook_batch_check'].includes(e.type)&&typeof e.held15!=='boolean')throw Error('Missing cooking confirmation.');
+        if(e.type==='clock_fix'&&(!Number.isFinite(e.valueAt)||!e.reason))throw Error('Invalid clock correction.');
+        if(e.type==='void'&&(!e.ref||!e.reason))throw Error('Invalid correction record.');
+        if(e.note!=null&&typeof e.note!=='string')throw Error('Invalid note.');
+      }
+    }
+    return x;
+  }
+  function mergeStores(a,b) {
+    validateStore(a);validateStore(b);const merged=JSON.parse(JSON.stringify(a));
+    for(const next of b.batches){const old=merged.batches.find(v=>v.id===next.id);if(!old){merged.batches.push(next);continue;}
+      if(JSON.stringify(old.trays)!==JSON.stringify(next.trays)||old.name!==next.name||old.mode!==next.mode)throw Error('A batch has conflicting details. Nothing was imported.');
+      for(const e of next.events){const existing=old.events.find(v=>v.id===e.id);if(existing&&JSON.stringify(existing)!==JSON.stringify(e))throw Error('Conflicting record found. Nothing was imported.');if(!existing)old.events.push(e);}
+    }
+    validateStore(merged);return merged;
+  }
+  function csv(store) {
+    const rows=[['Batch ID','Batch','Tray / shelf','Event','Actual time (Toronto)','Actual time (UTC)','Entered time (UTC)','Wing core C','15 seconds confirmed','Staff','Note / correction','Original record ID','Record ID','Corrected / voided']];
+    for(const b of store.batches){const voids=new Set(b.events.filter(e=>e.type==='void').map(e=>e.ref));for(const e of b.events)rows.push([b.id,b.name,b.trays.find(t=>t.id===e.tray)?.label??'',e.type,localDateTime(e.type==='clock_fix'?e.valueAt:e.at),new Date(e.type==='clock_fix'?e.valueAt:e.at).toISOString(),new Date(e.enteredAt).toISOString(),e.c??'',e.held15==null?'':e.held15?'Yes':'No',e.staff??'',e.note??e.reason??'',e.ref??'',e.id,voids.has(e.id)?'Yes':'']);}
+    return '\uFEFF'+rows.map(row=>row.map(v=>{let s=String(v);if(typeof v!=='number'&&/^[=+\-@\t\r\n]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"';}).join(',')).join('\r\n');
+  }
+  const api={MIN,HOUR,uid,event,active,temperature,fmt,localTime,localDateTime,localInput,parseLocal,evaluate,validateStore,mergeStores,csv};
+  root.WingCore=api;if(typeof module!=='undefined')module.exports=api;
+})(globalThis);
+</script>
+<script>(() => {
+ 'use strict';
+ const C=WingCore, KEY='scottys-wing-check-v1';
+ const empty=()=>({schema:1,batches:[],settings:{sound:false,staff:''}});
+ let data=empty(),storageOK=true,corrupt=false,screen='home',selected=null,toastTimer,audioCtx;
+ const app=document.getElementById('app'), modal=document.getElementById('modal');
+ const h=x=>String(x??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+ const button=(label,action,id='',cls='primary')=>`<button class="${cls}" data-action="${action}" data-id="${h(id)}">${label}</button>`;
+ function storageMessage(message) {const el=document.getElementById('storageNotice');el.hidden=false;el.textContent=message;document.querySelector('.local-badge').textContent='Backup needed';}
+ try{const raw=localStorage.getItem(KEY);if(raw)data=C.validateStore(JSON.parse(raw));}catch(e){storageOK=false;corrupt=true;storageMessage('Saved records could not be opened. They will not be overwritten. Use Records & backup to export the original data.');}
+ function save(){
+   if(corrupt)return false;
+   try{C.validateStore(data);localStorage.setItem(KEY,JSON.stringify(data));storageOK=true;window.parent.postMessage({type:'VISION_CHANGED',module:'wings'},location.origin);document.getElementById('storageNotice').hidden=true;document.querySelector('.local-badge').textContent='Saved on this device';return true;}
+   catch(e){storageOK=false;storageMessage('Device saving is unavailable. Records are only in this open tab. Download a backup before closing.');return false;}
+ }
+ function toast(s){const el=document.getElementById('toast');el.textContent=s;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3300);}
+ const batch=()=>data.batches.find(b=>b.id===selected);
+ function append(b,type,values={},at=Date.now()){const e=C.event(type,{staff:data.settings?.staff||'',...values,at:values.at??at});b.events.push(e);return e;}
+ function persist(message='Reading saved'){const ok=save();toast(ok?message:'Not saved to disk — export a backup');return ok;}
+ function staffValue(v){v=String(v??'').trim();if(!v||v.length>20)throw Error('Enter your initials (up to 20 characters).');return v;}
+ function timeLeft(t,now=Date.now()) {if(t==null)return 'Time unknown';const delta=t-now;if(delta<=0)return 'Check now';const sec=Math.ceil(delta/1000);if(sec>=3600)return `${Math.floor(sec/3600)} h ${Math.floor(sec%3600/60)} m`;return `${Math.floor(sec/60).toString().padStart(2,'0')}:${(sec%60).toString().padStart(2,'0')}`;}
+ const badge=e=>`<span class="tag ${e.status==='review'?'bad':['cooled','packed'].includes(e.status)?'good':['cooling','transfer','cookcheck'].includes(e.status)?'warn':''}">${h(e.status==='review'?'Tell Scotty':e.status==='packed'?'Finished':e.status==='cooled'?'Cold checks done':e.status==='cookcheck'?'Cook check':e.status==='transfer'?'Into cooler':e.status)}</span>`;
+ function heading(title,sub,actions=''){return `<div class="page-heading"><div><div class="eyebrow">Wing check</div><h1>${title}</h1><p>${sub}</p></div>${actions}</div>`;}
+ function home(){
+   screen='home';document.body.dataset.view='home';selected=null;
+   const active=data.batches.filter(b=>!['packed','discarded'].includes(C.evaluate(b).status));
+   const finished=data.batches.filter(b=>['packed','discarded'].includes(C.evaluate(b).status));
+   app.innerHTML=heading('One check at a time.','Start a batch. Follow the prompt. We’ll keep the times.',button('+ Start a batch','new'))+(active.length?`<div class="cards">${active.map(card).join('')}</div>`:`<section class="empty"><div class="empty-copy"><div class="eyebrow">Made for the kitchen</div><h2>The thermometer readings are your only maths.</h2><p>Big buttons, one tray at a time, and a clear next step. The full log fills itself in as you work.</p>${button('Start the first batch','new','', 'primary large')}</div><div class="empty-steps"><div class="simple-step"><span class="number">1</span><div><strong>Start the batch</strong><small>Initials, tray count, starting temperature.</small></div></div><div class="simple-step"><span class="number">2</span><div><strong>Confirm the cook</strong><small>Enter each tray’s lowest core reading.</small></div></div><div class="simple-step"><span class="number">3</span><div><strong>Follow the cooling prompts</strong><small>Enter each tray’s warmest core reading.</small></div></div></div></section>`)+`<div class="batch-tools"><span class="mini muted">${data.batches.length} saved ${data.batches.length===1?'batch':'batches'} · Times shown for Welland</span><button class="text-button" data-action="existing">Add wings already out of the oven</button></div>`+(finished.length?`<details class="archived"><summary>Finished batches (${finished.length})</summary><ul class="record-list">${finished.slice().reverse().map(b=>`<li><div><strong>${h(b.name)}</strong><small>${h(C.localDateTime(b.createdAt))} · ${h(C.evaluate(b).title)}</small></div>${button('View record','history',b.id,'secondary small-button')}</li>`).join('')}</ul></details>`:'');
+ }
+ function card(b){const e=C.evaluate(b);const line=e.status==='review'?h(e.reasons[0]):e.status==='cooled'?'Every tray has a timely ≤4°C reading.':e.status==='cookcheck'?'Check each tray before cooling.':e.nextDue?`<span class="card-time" data-countdown="${e.nextDue}">${timeLeft(e.nextDue)}</span><div class="mini muted">${e.status==='cooking'?'until the reference cook check':'until the next check'}</div>`:'Record the next step.';return `<section class="card"><div class="card-top"><span class="eyebrow">${b.trays.length} ${b.trays.length===1?'tray':'trays'}</span>${badge(e)}</div><h2>${h(b.name)}</h2><div class="card-meta">Started ${h(C.localTime(b.createdAt))} · ${h(b.staff)}</div><div style="min-height:66px">${line}</div>${button(e.status==='review'?'Open batch':e.status==='cooled'?'Cover, label & finish':'Continue','open',b.id)}</section>`;}
+ function render(){if(screen==='home')home();else if(screen==='new')newForm(false);else if(screen==='existing')newForm(true);else if(screen==='measure')measure();else if(screen==='batch')detail();else if(screen==='history')history();}
+ function newForm(existing=false){
+   screen=existing?'existing':'new';document.body.dataset.view='form';
+   app.innerHTML=`<button class="back" data-action="home">← Back to batches</button>`+heading(existing?'Add an existing batch.':'Start a wing batch.',existing?'Use actual records. Leave unknown history blank; the batch will stay on hold.':'A few details now. One simple prompt after that.')+`<div class="two-column"><form id="newBatch" class="panel" data-existing="${existing}"><div class="row"><div class="field"><label for="initials">Your initials</label><input id="initials" name="staff" autocomplete="off" maxlength="20" value="${h(data.settings?.staff||'')}" required></div><div class="field"><label for="trayCount">How many trays?</label><select id="trayCount" name="count" required><option value="">Choose tray count</option>${Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1} ${i?'trays':'tray'}</option>`).join('')}</select></div></div>${existing?`<div class="notice">Unknown times and temperatures stay unknown. Adding a batch here does not certify its earlier cooking or cooling.</div><div class="field"><label for="pastOut">Actual oven-out time, if known</label><input id="pastOut" name="out" type="datetime-local"><small>Welland / Toronto time. Leave blank if you do not know it.</small></div><details><summary>Earlier cooking check, if documented</summary><div class="row"><div class="field"><label for="pastCore">Lowest cook core across ALL trays (°C)</label><input id="pastCore" name="cookCore" inputmode="decimal" placeholder="Actual reading"></div><div class="field"><label for="pastCookAt">Actual cooking-check time</label><input id="pastCookAt" name="cookAt" type="datetime-local"></div></div><label class="check-label"><input type="checkbox" name="held15">All trays were checked and stayed at ≥74°C for at least 15 seconds.</label></details>`:`<div class="field"><label for="rawCore">Warmest starting wing core (°C)</label><input id="rawCore" name="rawCore" inputmode="decimal" placeholder="Use the thermometer reading" required><small>Check the wings, with the probe set to °C. Cooler air is different.</small></div>`}<details id="trayDetails"><summary>Name the trays / shelves (optional)</summary><div id="trayLabels" class="tray-labels"><span class="help">Choose the tray count first.</span></div></details><details><summary>Batch name, weight & notes (optional)</summary><div class="field"><label for="batchName">Batch name</label><input id="batchName" name="name" maxlength="80" placeholder="We’ll make one automatically"></div><div class="field"><label for="weight">Actual drained wing weight (kg)</label><input id="weight" name="weight" type="number" min="0.001" step="0.001" placeholder="Leave blank if not weighed"></div><div class="field"><label for="newNotes">Notes / original use-by</label><textarea id="newNotes" name="notes" rows="2" maxlength="1000"></textarea></div></details><div class="form-error" role="alert"></div><div class="actions">${existing?'<button class="primary large" type="submit" name="mode" value="existing">Add batch & record temperatures</button>':'<button class="primary large" type="submit" name="mode" value="cook">Start oven timer</button><button class="secondary" type="submit" name="mode" value="dry">Start overnight fridge rest</button>'}</div></form><aside class="side-panel"><h3>${existing?'Keep the history honest.':'No paper chart to work out.'}</h3><div class="numbered-steps"><p>Times are filled in when you press the button.</p><p>You enter actual wing core temperatures, one tray at a time.</p><p>The form calculates deadlines and tells you the next step.</p></div><p class="help">Records stay in this device’s browser. Keep this file in the same place. Download a backup after each shift.</p></aside></div>`;
+ }
+ function notice(e){return e.status==='review'?`<div class="notice bad"><strong>Hold this batch. Tell Scotty.</strong><ul>${e.reasons.map(s=>`<li>${h(s)}</li>`).join('')}</ul><p>Continue recording actual readings. A later cold reading does not erase missing or late checks.</p></div>`:'';}
+ function detail(){
+   const b=batch();if(!b)return home();screen='batch';document.body.dataset.view='batch';const e=C.evaluate(b);const live=`<div id="liveNotice">${notice(e)}</div>`;
+   const readings=e.trays.length?`<div class="readings">${e.trays.map(t=>`<div class="reading ${t.cold?'good':''}"><strong>${h(t.label)}</strong><div class="reading-temp">${C.fmt(t.latest?.c)}<span class="mini"> °C</span></div><small>${t.latest?'Checked '+C.localTime(t.latest.at):t.cook?'Cook checked at '+C.localTime(t.cook.at):'No cooling reading yet'}</small></div>`).join('')}</div>`:'';
+   let content='';
+   if(e.status==='cooking')content=`<section class="hero-panel"><div class="eyebrow">Top oven reference</div><h1>Cooking in progress.</h1><div class="timer" data-countdown="${e.nextDue}">${timeLeft(e.nextDue)}</div><div class="timer-label">20-minute reference timer · a probe check is still required</div><div class="actions">${button('Wings out now — check the cook','out',b.id,'primary large')}</div><p class="help" style="margin-top:18px">Press this when the first tray leaves the oven. That starts the conservative cooling clock.</p></section>`;
+   else if(e.status==='brining')content=`<section class="hero-panel"><div class="eyebrow">18–20 hour fridge rest</div><h1>Keep the raw wings cold.</h1><div class="timer" data-countdown="${e.nextDue}">${timeLeft(e.nextDue)}</div><p>Cook from ${C.localDateTime(e.nextDue)} to ${C.localDateTime(e.restEnd)}.<br>Keep at ≤4°C, skin side up, with space between wings.</p><div class="actions">${button('Start cooking','start-cook',b.id,'primary large')}</div><p class="help" style="margin-top:18px">Check the original raw use-by. The overnight rest does not restart it.</p></section>`;
+   else if(e.status==='cookcheck')content=`<section class="hero-panel"><div class="eyebrow">Cook check</div><h1>Check the largest wings.</h1><p>Probe several large wings on every tray. Record the lowest centre temperature and confirm 15 seconds at ≥74°C.</p><div class="actions">${button('Check the trays','cook-round',b.id,'primary large')}</div></section>`;
+   else if(e.status==='transfer')content=`<section class="hero-panel"><div class="eyebrow">Cook confirmed</div><h1>Into the cooler promptly.</h1><p>Transfer to fresh trays in a spaced single layer. Keep airflow around the trays.<br>The rack and transfer time are already on the clock.</p><div class="actions">${button('All trays are in the cooler now','cooler',b.id,'primary large')}</div><button class="text-button" data-action="cool-round" data-id="${b.id}">Record a temperature first</button></section>`;
+   else if(e.status==='cooling')content=`<section class="hero-panel"><div class="eyebrow">Next temperature check</div><h1>Keep cooling.</h1><div class="timer" data-countdown="${e.nextDue}">${timeLeft(e.nextDue)}</div><div class="timer-label">Next check at ${C.localTime(e.nextDue)} · you can check sooner</div><div class="actions">${button('Record tray temperatures','cool-round',b.id,'primary large')}</div></section>${readings}`;
+   else if(e.status==='cooled')content=`<section class="hero-panel"><span class="tag good">All tracked cooling checks passed</span><h1 style="margin-top:18px">Every tray has a ≤4°C reading.</h1><p>Cover, label and keep refrigerated. Confirm that all trays are packed.</p><div class="actions">${button('Covered, labelled & packed','pack',b.id,'primary large')}</div><button class="text-button" data-action="cool-round" data-id="${b.id}">Take another temperature check</button></section>${readings}`;
+   else if(e.status==='packed')content=`<section class="hero-panel"><div class="eyebrow">Batch recorded</div><h1>Covered, labelled and chilled.</h1><p>Packed at ${C.localDateTime(e.packed)}.<br>House chilled use-by: <strong>${C.localDateTime(e.useBy)}</strong>, if never frozen.</p><div class="actions">${button('Back to batches','home','', 'primary large')}${button('Print this record','print',b.id,'secondary')}</div></section>${readings}`;
+   else if(e.status==='discarded')content=`<section class="hero-panel"><h1>Discard recorded.</h1><p>The readings and disposition remain in the batch history.</p>${button('View record','history',b.id)}</section>`;
+   else content=`<section class="panel"><h2>Keep the measurements coming.</h2><p>Only recorded evidence can establish the cooling checks. The manager can add a missed reading from an actual earlier record.</p><div class="actions">${button('Record current tray temperatures','cool-round',b.id,'primary large')}${button('Open the full record','history',b.id,'secondary')}</div></section>${readings}`;
+   app.innerHTML=`<button class="back" data-action="home">← Back to batches</button>`+heading(h(b.name),`${b.trays.length} trays · ${h(b.staff)} · started ${C.localDateTime(b.createdAt)}`,badge(e))+live+content+`<div class="batch-tools"><span class="help">${e.out==null?'Oven-out time: unknown':'Cooling clock began '+C.localTime(e.out)}${!e.allCold&&e.trays.some(t=>t.deadline2!=null)?' · Next final deadline: '+C.localTime(Math.min(...e.trays.filter(t=>!t.cold&&t.deadline2!=null).map(t=>t.deadline2),e.out+6*C.HOUR)):''}</span><div>${button('Full record & corrections','history',b.id,'secondary small-button')}</div></div>`;
+ }
+ function startRound(kind){const b=batch();if(!b)return;const r=b.round;if(!r||r.kind!==kind||r.done.length>=b.trays.length)b.round={id:C.uid(),kind,done:[]};save();screen='measure';measure();}
+ function measure(){
+   const b=batch();if(!b?.round)return detail();const r=b.round;
+   const tray=b.trays.find(t=>!r.done.includes(t.id));
+   if(!tray){b.round=null;save();screen='batch';return detail();}
+   screen='measure';document.body.dataset.view='measure';
+   const cook=r.kind==='cook',e=C.evaluate(b);
+   const keys=['1','2','3','4','5','6','7','8','9','.','0','back'];
+   app.innerHTML=`<button class="back" data-action="open" data-id="${b.id}">← Back to batch</button>
+     <div id="liveNotice">${notice(e)}</div>
+     <form id="measurement" class="measure-card">
+       <div class="measurement-info">
+         <div class="step-progress">${cook?'Cook check':'Cooling check'} · tray ${r.done.length+1} of ${b.trays.length}</div>
+         <div class="progress-track">${b.trays.map(t=>`<i class="${r.done.includes(t.id)?'done':''}"></i>`).join('')}</div>
+         <h1>${h(tray.label)}</h1>
+         <p>Probe several large wings. Enter the <strong>${cook?'lowest':'warmest'} centre reading</strong>.</p>
+         <div class="probe-reminder">Avoid bone. Clean and sanitise the probe.</div>
+       </div>
+       <div class="measurement-temp">
+         <label for="measurementTemp">${cook?'Lowest':'Warmest'} reading</label>
+         <div class="temp-wrap">
+           <button type="button" class="temp-edit" data-temp-key="sign" aria-label="Change temperature sign">±</button>
+           <input id="measurementTemp" class="temp-input" name="temp" inputmode="none" readonly autocomplete="off" placeholder="—" aria-describedby="tempHint" aria-label="${cook?'Lowest':'Warmest'} reading in degrees Celsius, use keypad">
+           <span>°C</span>
+           <button type="button" class="temp-edit clear-key" data-temp-key="clear">Clear</button>
+         </div>
+         <div id="tempHint" class="temp-hint">Wing centre temperature · probe set to °C</div>
+       </div>
+       <div class="temperature-keypad" role="group" aria-label="Temperature keypad">
+         ${keys.map(k=>`<button type="button" class="number-key ${k==='back'?'delete-key':''}" data-temp-key="${k}" aria-label="${k==='back'?'Delete last digit':k==='.'?'Decimal point':k}">${k==='back'?'⌫':k}</button>`).join('')}
+       </div>
+       <div class="measurement-confirm">${cook?'<label class="check-label"><input type="checkbox" name="held15">Confirmed: at least 74°C for 15 seconds.</label>':''}</div>
+       <div class="form-error" role="alert"></div>
+       <div class="measurement-submit">
+         <button class="primary large" type="submit">${r.done.length+1===b.trays.length?'Save last tray':'Save & next tray'} →</button>
+         <div class="saved-at">Time saved automatically.</div>
+       </div>
+     </form>`;
+   window.scrollTo(0,0);
+ }
+ function keypad(key){
+   const input=document.getElementById('measurementTemp');if(!input)return;
+   let v=input.value;
+   if(key==='clear')v='';
+   else if(key==='back')v=v.slice(0,-1);
+   else if(key==='sign')v=v.startsWith('-')?v.slice(1):'-'+v;
+   else if(key==='.') {if(!v.includes('.'))v=(v===''?'0':v==='-'?'-0':v)+'.';}
+   else if(/^\d$/.test(key)) {
+     if(v.includes('.')&&v.split('.')[1].length>=2)return;
+     if(!v.includes('.')&&v.replace('-','').length>=3)return;
+     v=(v+key).replace(/^(-?)0+(?=\d)/,'$1');
+   }
+   input.value=v;
+ }
+ document.addEventListener('click',e=>{const key=e.target.closest('[data-temp-key]');if(key)keypad(key.dataset.tempKey);});
+ document.addEventListener('keydown',e=>{
+   if(e.target.id!=='measurementTemp')return;
+   if(/^\d$/.test(e.key)||['.',',','Backspace','Delete','-'].includes(e.key)){
+     e.preventDefault();keypad(e.key==='Backspace'?'back':e.key==='Delete'?'clear':e.key==='-'?'sign':e.key===','?'.':e.key);
+   }
+ });
+ const names={dry_start:'Dry brine started',dry_end:'Dry brine ended',raw_check:'Starting wing temperature',cook_start:'Oven timer started',oven_out:'First tray out / cooling clock',cook_check:'Cooking temperature',cook_batch_check:'Earlier cook: lowest across all trays',cooler_in:'All trays in cooler',cool_check:'Cooling temperature',packed:'Covered, labelled & packed',note:'Note',void:'Correction: original retained',clock_fix:'Oven-out time corrected',discarded:'Discard recorded'};
+ function history(){
+   const b=batch();if(!b)return home();screen='history';document.body.dataset.view='history';const e=C.evaluate(b);const voids=new Set(b.events.filter(v=>v.type==='void').map(v=>v.ref));
+   app.innerHTML=`<button class="back" data-action="open" data-id="${b.id}">← Back to batch</button>`+heading(h(b.name),'Full log · actual measurement times and corrections remain visible.',button('Print record','print',b.id,'secondary'))+notice(e)+`<div class="panel"><div class="chip-row"><span class="chip">${b.trays.length} trays</span><span class="chip">${b.weight==null?'Weight not recorded':h(b.weight)+' kg'}</span><span class="chip">Staff: ${h(b.staff)}</span><span class="chip">Toronto time</span></div>${b.notes?`<p>${h(b.notes)}</p>`:''}<div class="history-wrap"><table class="history-table"><thead><tr><th>Actual time</th><th>Step</th><th>Tray / shelf</th><th>Core</th><th>Staff</th><th>Note</th><th></th></tr></thead><tbody>${b.events.slice().sort((a,b)=>a.enteredAt-b.enteredAt).map(v=>`<tr class="${voids.has(v.id)?'muted':''}"><td>${h(C.localDateTime(v.type==='clock_fix'?v.valueAt:v.at))}${v.enteredAt-v.at>60000?'<br><small>Entered '+h(C.localDateTime(v.enteredAt))+'</small>':''}</td><td>${h(names[v.type]||v.type)}${voids.has(v.id)?'<br><strong>Corrected / voided</strong>':''}</td><td>${h(b.trays.find(t=>t.id===v.tray)?.label||'—')}</td><td>${v.c==null?'—':C.fmt(v.c)+'°C'}${v.held15!=null?'<br><small>15 s: '+(v.held15?'yes':'not confirmed')+'</small>':''}</td><td>${h(v.staff||'—')}</td><td>${h(v.note||v.reason||'')}</td><td>${['raw_check','cook_check','cool_check','cook_batch_check'].includes(v.type)&&!voids.has(v.id)?button('Correct','correct',v.id,'text-button'):''}</td></tr>`).join('')}</tbody></table></div><div class="actions">${button('Add a missed reading','manual',b.id,'secondary')}${button('Correct oven-out time','clock',b.id,'secondary')}${button('Add a note','note',b.id,'secondary')}</div><details><summary>Record a discard</summary><p>This keeps the whole history. It does not delete the batch.</p>${button('Record discard','discard',b.id,'secondary')}</details></div>`;
+ }
+ function openModal(content){document.getElementById('modalContent').innerHTML=content;if(!modal.open)modal.showModal();}
+ function manager(){openModal(`<h2>Records & backup</h2><p>The staff view stays simple. The full records live here.</p><div class="modal-section"><h3>Save a copy after each shift</h3><p>Browser storage can be cleared. A JSON backup can restore your records. CSV opens in Excel and can be used for Vision later.</p><div class="actions">${button('Download backup','backup','','primary')}${button('Export CSV','csv','','secondary')}${button('Restore / merge backup','import','','secondary')}</div>${corrupt?button('Download unreadable saved data','raw-backup','','secondary'):''}</div><div class="modal-section"><h3>Batch records</h3>${data.batches.length?`<ul class="record-list">${data.batches.slice().reverse().map(b=>`<li><div><strong>${h(b.name)}</strong><small>${C.localDateTime(b.createdAt)} · ${h(C.evaluate(b).title)}</small></div>${button('Open','history',b.id,'secondary small-button')}</li>`).join('')}</ul>`:'<p>No batches yet.</p>'}</div><div class="modal-section"><h3>Working on this tablet</h3><p>Keep the downloaded form at the same file path and use the same browser. Records save locally first. Use Vision’s Sync screen to back them up online. Keep the tab open for reminders. Times use the device’s clock, displayed for Welland / Toronto.</p><p>No automatic temperature readings are taken: staff must use the probe.</p></div>`);}
+ function manualModal(kind,id){const b=batch();const original=id?b.events.find(e=>e.id===id):null;
+   if(kind==='clock'){openModal(`<h2>Correct the actual oven-out time</h2><p>This changes the calculated deadlines. The earlier record stays in the log. Use an actual known time, never a guess.</p><form id="clockForm"><div class="field"><label for="clockAt">Actual oven-out time (Toronto)</label><input id="clockAt" name="at" type="datetime-local" required></div><div class="field"><label for="clockReason">Reason / source of corrected time</label><textarea id="clockReason" name="reason" required minlength="4"></textarea></div><div class="form-error" role="alert"></div><button class="primary" type="submit">Save correction</button></form>`);return;}
+   if(kind==='note'||kind==='discard'){openModal(`<h2>${kind==='discard'?'Record a discard':'Add a batch note'}</h2><form id="noteForm" data-kind="${kind}"><div class="field"><label for="batchNote">${kind==='discard'?'Reason and actual discarded quantity, if measured':'Note'}</label><textarea id="batchNote" name="note" required rows="4" maxlength="2000"></textarea></div><div class="form-error" role="alert"></div><button class="primary ${kind==='discard'?'danger':''}" type="submit">${kind==='discard'?'Record discard':'Save note'}</button></form>`);return;}
+   const typ=original?.type||'cool_check';
+   openModal(`<h2>${original?'Correct a reading':'Add a missed reading'}</h2><p>${original?'The original stays visible and is marked corrected.':'Use the actual measurement and time from an earlier record.'} This form does not create missing evidence.</p><form id="manualForm" data-original="${h(original?.id||'')}"><div class="field"><label for="manualType">Step</label><select id="manualType" name="type" ${original?'disabled':''}><option value="cool_check" ${typ==='cool_check'?'selected':''}>Cooling temperature</option><option value="cook_check" ${typ==='cook_check'?'selected':''}>Cooking temperature</option>${typ==='cook_batch_check'?'<option value="cook_batch_check" selected>Earlier minimum across all trays</option>':typ==='raw_check'?'<option value="raw_check" selected>Starting wing temperature</option>':''}</select></div><div class="row"><div class="field"><label for="manualTray">Tray / shelf</label><select id="manualTray" name="tray" ${['raw_check','cook_batch_check'].includes(typ)?'disabled':''}>${b.trays.map(t=>`<option value="${t.id}" ${original?.tray===t.id?'selected':''}>${h(t.label)}</option>`).join('')}</select></div><div class="field"><label for="manualTemp">Actual wing core (°C)</label><input id="manualTemp" name="temp" inputmode="decimal" required value="${original?.c!=null?C.fmt(original.c):''}"></div></div><div class="field"><label for="manualAt">Actual measurement time (Toronto)</label><input id="manualAt" name="at" type="datetime-local" required value="${original?C.localInput(original.at):''}"></div><label class="check-label"><input name="held15" type="checkbox" ${original?.held15?'checked':''}>For a cooking check: ≥74°C was maintained for 15 seconds.</label><div class="field"><label for="manualReason">Reason / source of this entry</label><textarea id="manualReason" name="reason" rows="2" required minlength="4"></textarea></div><div class="form-error" role="alert"></div><button class="primary" type="submit">Save with the actual time</button></form>`);
+ }
+ function download(name,content,type){const blob=new Blob([content],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000);}
+ function printBatch(b){const e=C.evaluate(b);const voids=new Set(b.events.filter(x=>x.type==='void').map(x=>x.ref));document.getElementById('printArea').innerHTML=`<h1>Scotty’s on King — ${h(b.name)}</h1><p class="print-note">${h(e.title)} · ${h(b.staff)} · ${b.weight==null?'Weight not recorded':h(b.weight)+' kg'} · Timezone America/Toronto<br>Oven out: ${C.localDateTime(e.out)} · Packed: ${C.localDateTime(e.packed)}</p>${e.reasons.length?`<p class="print-note"><strong>HOLD / REVIEW:</strong> ${e.reasons.map(h).join(' ')}</p>`:''}<table><thead><tr><th>Actual time</th><th>Step</th><th>Tray / shelf</th><th>Core °C</th><th>15 seconds</th><th>Staff</th><th>Notes / entered later</th></tr></thead><tbody>${b.events.slice().sort((x,y)=>x.enteredAt-y.enteredAt).map(v=>`<tr class="${voids.has(v.id)?'voided':''}"><td>${C.localDateTime(v.type==='clock_fix'?v.valueAt:v.at)}</td><td>${h(names[v.type])}${voids.has(v.id)?' (corrected)':''}</td><td>${h(b.trays.find(t=>t.id===v.tray)?.label||'—')}</td><td>${C.fmt(v.c)}</td><td>${v.held15==null?'—':v.held15?'Yes':'Not confirmed'}</td><td>${h(v.staff)}</td><td>${h(v.note||v.reason||'')}${v.enteredAt-v.at>60000?' · Entered '+C.localDateTime(v.enteredAt):''}</td></tr>`).join('')}</tbody></table>`;window.print();}
+ function futureGuard(t){if(t>Date.now()+60000)throw Error('Use an actual past measurement time, not a future time.');return t;}
+ function error(form,e){const el=form.querySelector('.form-error');el.textContent=e.message||String(e);el.scrollIntoView({block:'nearest'});}
+ app.addEventListener('change',e=>{if(e.target.id==='trayCount'){const n=Number(e.target.value);document.getElementById('trayLabels').innerHTML=n?Array.from({length:n},(_,i)=>`<label class="field">Tray ${i+1}<input name="trayLabel${i}" maxlength="100" value="Tray ${i+1}" placeholder="e.g. Top shelf"></label>`).join(''):'Choose the tray count first.';}});
+ document.addEventListener('submit',e=>{
+   const form=e.target;if(!['newBatch','measurement','manualForm','clockForm','noteForm','startCookForm'].includes(form.id))return;e.preventDefault();
+   try{
+     if(corrupt)throw Error('Original saved data needs recovery before adding records. Export it from Records & backup.');
+     const f=new FormData(form),now=Date.now();
+     if(form.id==='newBatch'){
+       const staff=staffValue(f.get('staff')),n=Number(f.get('count'));if(!Number.isInteger(n)||n<1||n>12)throw Error('Choose the actual number of trays.');
+       const existing=form.dataset.existing==='true', mode=e.submitter?.value||'cook';
+       const day=C.localInput(now).slice(0,10),weight=f.get('weight')===''?null:Number(f.get('weight'));
+       if(weight!==null&&(!Number.isFinite(weight)||weight<=0))throw Error('Enter a positive measured weight or leave it blank.');
+       const b={id:C.uid(),name:String(f.get('name')||'').trim()||`Wings ${day} · ${data.batches.filter(b=>C.localInput(b.createdAt).startsWith(day)).length+1}`,createdAt:now,staff,weight,mode:existing?'existing':'normal',notes:String(f.get('notes')||''),trays:Array.from({length:n},(_,i)=>({id:C.uid(),label:String(f.get('trayLabel'+i)||`Tray ${i+1}`).trim()||`Tray ${i+1}`})),events:[],round:null};
+       const events=[];
+       if(existing){if(f.get('out'))events.push(C.event('oven_out',{at:futureGuard(C.parseLocal(String(f.get('out')))),staff,note:'Entered from an existing batch record.'}));if(String(f.get('cookCore')||'').trim()){if(!f.get('cookAt'))throw Error('Enter the actual earlier cooking-check time.');events.push(C.event('cook_batch_check',{at:futureGuard(C.parseLocal(String(f.get('cookAt')))),staff,c:C.temperature(String(f.get('cookCore'))),held15:f.get('held15')==='on',note:'Manager entry: reported lowest cooking reading across every tray.'}));}events.push(C.event('note',{staff,note:'Existing batch added. Original cooler-entry time was not supplied.'}));}
+       else {const raw=C.temperature(String(f.get('rawCore')));events.push(C.event('raw_check',{c:raw,staff}));events.push(C.event(mode==='dry'?'dry_start':'cook_start',{staff}));}
+       b.events.push(...events);data.settings={...data.settings,staff};data.batches.push(b);selected=b.id;persist('Batch started');screen='batch';if(existing)startRound('cool');else detail();
+     }else if(form.id==='measurement'){
+       const b=batch(),r=b.round,t=b.trays.find(t=>!r.done.includes(t.id)),c=C.temperature(String(f.get('temp'))),cook=r.kind==='cook',held15=f.get('held15')==='on'&&c>=74;
+       append(b,cook?'cook_check':'cool_check',{tray:t.id,c,held15:cook?held15:undefined,round:r.id});
+       if(cook&&(c<74||!held15)){persist('Reading saved — cook check not passed');form.querySelector('[name=temp]').value='';form.querySelector('[name=held15]').checked=false;throw Error(c<74?'This tray needs more cooking. Keep the original cooling-clock time; record another cook check when ready.':'Reading saved. Confirm at least 15 seconds at ≥74°C before this tray can pass.');}
+       r.done.push(t.id);persist();if(r.done.length===b.trays.length){b.round=null;save();screen='batch';detail();}else measure();
+     }else if(form.id==='startCookForm'){
+       const b=batch(),c=C.temperature(String(f.get('temp')));append(b,'raw_check',{c});append(b,'dry_end');append(b,'cook_start');persist('Oven timer started');modal.close();screen='batch';detail();
+     }else if(form.id==='manualForm'){
+       const b=batch(),original=form.dataset.original?b.events.find(v=>v.id===form.dataset.original):null;
+       const type=original?.type||String(f.get('type')),c=C.temperature(String(f.get('temp'))),at=futureGuard(C.parseLocal(String(f.get('at')))),reason=String(f.get('reason')||'').trim();if(reason.length<4)throw Error('Add the reason or source for this entry.');
+       if(original)append(b,'void',{ref:original.id,reason});
+       append(b,type,{c,at,tray:['raw_check','cook_batch_check'].includes(type)?undefined:original?.tray||String(f.get('tray')),held15:['raw_check','cool_check'].includes(type)?undefined:f.get('held15')==='on',note:reason});
+       persist('Actual-time reading saved; original history retained');modal.close();history();
+     }else if(form.id==='clockForm'){
+       const at=futureGuard(C.parseLocal(String(f.get('at')))),reason=String(f.get('reason')||'').trim();if(reason.length<4)throw Error('Enter the source of the corrected time.');append(batch(),'clock_fix',{valueAt:at,reason});persist('Clock correction saved');modal.close();history();
+     }else if(form.id==='noteForm'){
+       const note=String(f.get('note')||'').trim();if(!note)throw Error('Enter a note.');append(batch(),form.dataset.kind==='discard'?'discarded':'note',{note});persist('Note saved');modal.close();history();
+     }
+   }catch(err){error(form,err);}
+ });
+ document.addEventListener('click',e=>{
+   const target=e.target.closest('[data-action]');if(!target)return;const a=target.dataset.action,id=target.dataset.id;
+   if(['open','history','print'].includes(a)&&id)selected=id;
+   try{
+     if(a==='home'){modal.close();return home();}if(a==='new')return newForm(false);if(a==='existing'){modal.close();return newForm(true);}if(a==='open'){modal.close();screen='batch';return detail();}if(a==='history'){modal.close();return history();}
+     if(a==='out'){const b=batch();if(!C.active(b).some(v=>v.type==='oven_out'))append(b,'oven_out');persist('Oven-out time saved; cooling clock started');return startRound('cook');}
+     if(a==='cook-round')return startRound('cook');if(a==='cool-round')return startRound('cool');
+     if(a==='cooler'){append(batch(),'cooler_in');persist('Cooler entry saved — original clock retained');return startRound('cool');}
+     if(a==='pack'){const b=batch(),v=C.evaluate(b);if(!v.allCold||v.reasons.length)throw Error('This batch cannot be marked packed: current cooling checks are incomplete or need review.');append(b,'packed');persist('Covered, labelled & packed');return detail();}
+     if(a==='start-cook'){openModal('<h2>Start cooking from cold</h2><form id="startCookForm"><div class="field"><label for="startTemp">Warmest wing core now (°C)</label><input id="startTemp" name="temp" inputmode="decimal" required placeholder="Actual probe reading"></div><div class="form-error" role="alert"></div><button class="primary" type="submit">Wings into oven — start timer</button></form>');return;}
+     if(a==='backup')return download('Scottys_Wing_Backup_'+C.localInput(Date.now()).slice(0,10)+'.json',JSON.stringify(data,null,2),'application/json');
+     if(a==='raw-backup'){let raw='';try{raw=localStorage.getItem(KEY)||'';}catch{}return download('Scottys_Original_Saved_Data.txt',raw,'text/plain');}
+     if(a==='csv')return download('Scottys_Wing_Records_'+C.localInput(Date.now()).slice(0,10)+'.csv',C.csv(data),'text/csv;charset=utf-8');
+     if(a==='import'){document.getElementById('importFile').click();return;}
+     if(a==='print')return printBatch(batch());
+     if(['manual','clock','note','discard','correct'].includes(a))return manualModal(a==='correct'?'manual':a,a==='correct'?id:null);
+   }catch(err){toast(err.message);}
+ });
+ document.getElementById('importFile').addEventListener('change',async e=>{try{const file=e.target.files[0];if(!file)return;if(corrupt)throw Error('Export the unreadable original data first. Recovery needs review; it will not be overwritten.');if(file.size>10*1024*1024)throw Error('The backup is larger than 10 MB.');const incoming=C.validateStore(JSON.parse(await file.text()));data=C.mergeStores(data,incoming);persist('Backup merged — existing records retained');manager();home();}catch(err){toast(err.message);}finally{e.target.value='';}});
+ document.getElementById('home').addEventListener('click',e=>{e.preventDefault();home();});
+ document.getElementById('manager').addEventListener('click',manager);
+ document.getElementById('closeModal').addEventListener('click',()=>modal.close());
+ document.getElementById('guidance').addEventListener('click',()=>openModal(`<h2>Temperature rules</h2><div class="numbered-steps"><p><strong>Cook:</strong> verify ≥74°C for 15 seconds in several large wings on each tray. The 20-minute top-oven timer is a reference, not a passing result.</p><p><strong>Cool:</strong> 60°C to 20°C within 2 hours, then to ≤4°C within another 4 hours. This form uses oven-out time as a conservative start. Rack and transfer time count.</p><p><strong>Per-tray deadlines:</strong> ≤20°C by oven-out + 2 h. Then ≤4°C by the earlier of that tray’s first verified ≤20°C time + 4 h, or oven-out + 6 h.</p><p><strong>Keep chilled:</strong> ≤4°C. The suggested 72-hour use-by is a house limit for never-frozen cooked stock, from oven-out.</p></div><div class="notice">Missing or late checks stay on hold. Add actual earlier readings only when supported by a real record; corrections keep the originals.</div><p class="source-links"><a href="https://www.hamilton.ca/sites/default/files/2024-07/Food-Handler-Training-Manual-ENGLISH-APRIL2023.pdf" target="_blank" rel="noopener">Ontario food-handler guide</a><br><a href="https://www.hpph.ca/health-topics/food-and-nutrition/safe-food-handling/" target="_blank" rel="noopener">Huron Perth Public Health</a><br>Guidance checked 4 November 2026.</p>`));
+ function beep(){try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=660;g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.6);o.start();o.stop(audioCtx.currentTime+.6);}catch{}}
+ function updateSound(){document.getElementById('sound').textContent=data.settings?.sound?'Sound on':'Sound off';}
+ document.getElementById('sound').addEventListener('click',()=>{data.settings={...data.settings,sound:!data.settings?.sound};save();updateSound();if(data.settings.sound)beep();});
+ const alerted=new Set();let homeSignature='';
+ function tick(){const now=Date.now();document.querySelectorAll('[data-countdown]').forEach(el=>el.textContent=timeLeft(Number(el.dataset.countdown),now));
+   if(screen==='home'){const sign=data.batches.map(b=>{const e=C.evaluate(b,now);return e.status+':'+(e.nextDue!=null&&e.nextDue<=now);}).join('|');if(homeSignature&&sign!==homeSignature)home();homeSignature=sign;}
+   if(selected){const b=batch();if(b){const e=C.evaluate(b,now),el=document.getElementById('liveNotice');if(el)el.innerHTML=notice(e);}}
+   if(data.settings?.sound)for(const b of data.batches){const e=C.evaluate(b,now);const key=b.id+':'+e.status+':'+e.nextDue;if((e.nextDue&&now>=e.nextDue||e.status==='review')&&!alerted.has(key)&&!['packed','discarded','cooled'].includes(e.status)){alerted.add(key);beep();}}
+ }
+ window.addEventListener('beforeunload',e=>{if(!storageOK&&data.batches.length){e.preventDefault();e.returnValue='Download a backup before closing.';}});
+ document.addEventListener('visibilitychange',tick);window.addEventListener('focus',tick);
+ updateSound();home();setInterval(tick,1000);
+})();
+</script>
+</body></html>

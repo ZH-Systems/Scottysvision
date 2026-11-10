@@ -1,0 +1,579 @@
+import {
+  identity,
+  body,
+  json,
+  fail,
+  cleanId,
+  hash,
+  canonical,
+  AppError,
+} from "@/lib/server";
+import { database } from "@/lib/vision-store";
+import {
+  metadata,
+  range,
+  requireTab,
+  invoke,
+  SHEET,
+  connectionFailure,
+  permitSheets,
+} from "@/lib/vision-connectors";
+import { convert, validateRecipe } from "@/lib/core/kitchen.mjs";
+export const dynamic = "force-dynamic";
+const cols: any = {
+  ingredients: [
+    "Ingredient ID",
+    "Ingredient Name",
+    "Category",
+    "Subcategory",
+    "Primary Vendor ID",
+    "Purchase Unit",
+    "Package Qty",
+    "Package UOM",
+    "Net Package Qty",
+    "Recipe UOM",
+    "Yield %",
+    "Current Package Cost",
+    "Cost / Recipe UOM",
+    "Last Purchase Date",
+    "Reorder Point",
+    "Par Level",
+    "Storage Location",
+    "Shelf Life Days",
+    "Freezable",
+    "Allergens",
+    "Active",
+    "Notes",
+    "Last Updated",
+  ],
+  waste: [
+    "Waste ID",
+    "Date / Time",
+    "Ingredient / Recipe ID",
+    "Item Name",
+    "Waste Reason",
+    "Qty",
+    "UOM",
+    "Unit Cost",
+    "Waste Value",
+    "Employee",
+    "Photo Link",
+    "Notes",
+  ],
+  inventory: [
+    "Transaction ID",
+    "Date / Time",
+    "Ingredient ID",
+    "Transaction Type",
+    "Qty",
+    "UOM",
+    "Unit Cost",
+    "Value",
+    "Reference ID",
+    "Location",
+    "Entered By",
+    "Notes",
+  ],
+  recipes: [
+    "Recipe ID",
+    "Recipe Name",
+    "Recipe Type",
+    "Batch Yield Qty",
+    "Yield UOM",
+    "Portion Qty",
+    "Portion UOM",
+    "Ingredient Cost / Batch",
+    "Labour Minutes",
+    "Labour Cost / Batch",
+    "Total Batch Cost",
+    "Cost / Yield UOM",
+    "Shelf Life Days",
+    "Active",
+  ],
+  components: [
+    "Component ID",
+    "Recipe ID",
+    "Component Type",
+    "Ingredient / Recipe ID",
+    "Component Name",
+    "Qty",
+    "UOM",
+    "Unit Cost",
+    "Extended Cost",
+    "Notes",
+  ],
+};
+function letter(n: number) {
+  let s = "";
+  for (; n; n = Math.floor((n - 1) / 26))
+    s = String.fromCharCode(65 + ((n - 1) % 26)) + s;
+  return s;
+}
+function valueCell(v: any) {
+  if (v === null || v === undefined || v === "") return {};
+  return {
+    userEnteredValue:
+      typeof v === "number" ? { numberValue: v } : { stringValue: String(v) },
+  };
+}
+async function rows(meta: any, name: string, headers: string[]) {
+  const p = requireTab(meta, name, headers.length),
+    last = Math.min(p.gridProperties.rowCount, 10000);
+  const data = await range(name, "A1:" + letter(headers.length) + last);
+  if (
+    !Array.isArray(data.values) ||
+    headers.some((v, i) => data.values[0]?.[i] !== v)
+  )
+    throw new AppError(
+      409,
+      "The " + name + " headings changed. Review the workbook before posting.",
+    );
+  return { p, values: data.values };
+}
+async function cells(a1: string) {
+  const r = await invoke("get_spreadsheet_cells", {
+    spreadsheet_id: SHEET,
+    ranges: [a1],
+    cell_fields:
+      "userEnteredValue,effectiveValue,formattedValue,dataValidation,chipRuns,userEnteredFormat",
+  });
+  return r.sheets?.[0]?.data?.[0]?.rowData || [];
+}
+async function block(
+  table: any,
+  name: string,
+  headers: string[],
+  content: any[][],
+  rowIndex?: number,
+) {
+  const start = rowIndex ?? Math.max(1, table.values.length);
+  if (start + content.length > table.p.gridProperties.rowCount)
+    throw new AppError(
+      409,
+      name + " has no room. Extend the table in Vision before posting.",
+    );
+  const target =
+      "'" +
+      name +
+      "'!A" +
+      (start + 1) +
+      ":" +
+      letter(headers.length) +
+      (start + content.length),
+    existing = await cells(target);
+  for (const row of existing)
+    for (const c of row.values || []) {
+      if (c.userEnteredValue?.formulaValue || c.chipRuns?.length)
+        throw new AppError(
+          409,
+          "The proposed destination contains a formula or rich cell. Review it in Sheets.",
+        );
+      if (
+        rowIndex === undefined &&
+        c.userEnteredValue &&
+        Object.keys(c.userEnteredValue).length
+      )
+        throw new AppError(409, "The destination changed. Preview again.");
+    }
+  return {
+    sheet: name,
+    sheetId: table.p.sheetId,
+    start,
+    range: target,
+    headers,
+    rows: content,
+    existing,
+  };
+}
+async function plan(owner: string, eventId: string) {
+  const db = database(),
+    e = await db
+      .prepare(
+        "SELECT kind,entity_id,payload,created_at FROM vision_events WHERE owner=? AND event_id=?",
+      )
+      .bind(owner, eventId)
+      .first<any>();
+  if (!e) throw new AppError(409, "Sync this record before posting.");
+  const x = JSON.parse(e.payload),
+    meta = await metadata(),
+    ingredients = await rows(meta, "01_INGREDIENTS", cols.ingredients),
+    blocks: any[] = [],
+    events =
+      (
+        await db
+          .prepare(
+            "SELECT kind,entity_id,payload FROM vision_events WHERE owner=? AND kind IN ('ingredient','waste_void') ORDER BY created_at,event_id",
+          )
+          .bind(owner)
+          .all<any>()
+      ).results || [],
+    catalog = new Map<string, any>();
+  for (const ev of events)
+    if (ev.kind === "ingredient")
+      catalog.set(ev.entity_id, JSON.parse(ev.payload));
+  const approved = (id: string) => {
+    const item = catalog.get(id),
+      visionId = item?.visionId || id,
+      row = ingredients.values.find((r: any[]) => r[0] === visionId);
+    if (!row || String(row[20]).toLowerCase() !== "yes")
+      throw new AppError(
+        409,
+        "Publish or map an active Vision ingredient first: " +
+          (item?.name || id),
+      );
+    return { item, visionId, row };
+  };
+  let visionId: string | undefined,
+    summary = "";
+  if (e.kind === "ingredient") {
+    if (
+      !x.name?.trim() ||
+      !["g", "kg", "mL", "L", "ea", "oz", "lb"].includes(x.baseUnit)
+    )
+      throw new AppError(400, "Ingredient name / unit needs review.");
+    if (
+      !["Food", "Beverage", "Packaging", "Cleaning", "Operations"].includes(
+        x.category,
+      )
+    )
+      throw new AppError(409, "Choose a Vision category before publishing.");
+    visionId = x.visionId || "I-K-" + (await hash(x.id)).slice(0, 22);
+    cleanId(visionId);
+    const index = ingredients.values.findIndex((r: any[]) => r[0] === visionId),
+      old = index < 0 ? Array(23).fill(null) : [...ingredients.values[index]];
+    while (old.length < 23) old.push(null);
+    if (index >= 0 && old[1] !== x.name)
+      throw new AppError(
+        409,
+        "That Vision ID has a different name. Review the mapping in the ingredient editor.",
+      );
+    if (index >= 0 && old[9] !== x.baseUnit)
+      throw new AppError(
+        409,
+        "The Vision cost unit differs. Review the unit before updating.",
+      );
+    const values = [...old];
+    values[0] = visionId;
+    values[1] = x.name;
+    values[2] = x.category;
+    values[9] = x.baseUnit;
+    values[12] = x.confirmed ? x.cost : null;
+    if (
+      x.confirmed &&
+      (typeof x.cost !== "number" || x.cost < 0 || !x.costDate)
+    )
+      throw new AppError(400, "Reviewed ingredient cost needs a checked date.");
+    values[20] = x.active ? "Yes" : "No";
+    values[21] =
+      String(old[21] || "") +
+      "\nVision Kitchen review " +
+      eventId +
+      "; " +
+      (x.confirmed
+        ? x.basis + " price checked " + x.costDate
+        : "price unverified") +
+      ". Local ID " +
+      x.id +
+      ". No stock receipt or opening balance.";
+    values[22] = new Date(e.created_at).toISOString();
+    blocks.push(
+      await block(
+        ingredients,
+        "01_INGREDIENTS",
+        cols.ingredients,
+        [values],
+        index < 0 ? undefined : index,
+      ),
+    );
+    summary =
+      (index < 0 ? "Create" : "Update") +
+      " this ingredient and its reviewed unit cost. Purchase details and stock remain unchanged.";
+  } else if (e.kind === "waste") {
+    if (
+      events.some(
+        (r: any) =>
+          r.kind === "waste_void" &&
+          JSON.parse(r.payload).recordId === e.entity_id,
+      )
+    )
+      throw new AppError(
+        409,
+        "This entry was corrected / voided. It will not be posted.",
+      );
+    const a = approved(x.itemId),
+      qty = convert(x.qty, x.unit, a.row[9], x.conversion || {});
+    if (qty === null || !(qty > 0))
+      throw new AppError(
+        409,
+        "A measured conversion to the Vision stock unit is needed.",
+      );
+    if (!(x.qty > 0) || typeof x.employee !== "string" || !x.employee.trim())
+      throw new AppError(400, "Check waste quantity and employee.");
+    const reasonMap: any = {
+        "Dropped / damaged": "Dropped/Damaged",
+        "Quality reject": "QualityReject",
+        "Staff meal": "StaffMeal",
+        "Customer return": "CustomerReturn",
+      },
+      reason = reasonMap[x.reason] || x.reason,
+      listData = await range("99_LISTS", "F2:F8");
+    if (!(listData.values || []).some((r: any[]) => r[0] === reason))
+      throw new AppError(
+        409,
+        "This waste reason needs an approved Vision mapping: " + x.reason,
+      );
+    const w = await rows(meta, "09_WASTE_LOG", cols.waste),
+      t = await rows(meta, "08_INVENTORY_TXNS", cols.inventory),
+      tx = "TX-" + x.id;
+    if (
+      w.values.some((r: any[]) => r[0] === x.id) ||
+      t.values.some((r: any[]) => r[0] === tx)
+    )
+      throw new AppError(
+        409,
+        "This record ID already appears in Vision. Review the existing rows; nothing was appended.",
+      );
+    const notes =
+      (x.notes || "") +
+      " | Vision Kitchen event " +
+      eventId +
+      "; original cost snapshot; " +
+      x.costBasis +
+      "; price date " +
+      (x.costDate || "unknown");
+    blocks.push(
+      await block(w, "09_WASTE_LOG", cols.waste, [
+        [
+          x.id,
+          new Date(x.at).toISOString(),
+          a.visionId,
+          x.itemName,
+          reason,
+          x.qty,
+          x.unit,
+          x.unitCost,
+          x.value,
+          x.employee,
+          null,
+          notes,
+        ],
+      ]),
+    );
+    blocks.push(
+      await block(t, "08_INVENTORY_TXNS", cols.inventory, [
+        [
+          tx,
+          new Date(x.at).toISOString(),
+          a.visionId,
+          "Waste",
+          -qty,
+          a.row[9],
+          x.value === null ? null : x.value / qty,
+          x.value === null ? null : -x.value,
+          x.id,
+          x.location || null,
+          x.employee,
+          notes,
+        ],
+      ]),
+    );
+    summary =
+      "Record the waste and one linked inventory decrease. The saved cost is retained; no opening stock is invented.";
+  } else if (e.kind === "recipe" && x.finalized) {
+    const r = validateRecipe(x.recipe),
+      c = x.costingSnapshot,
+      recipeId = "R-K-" + (await hash(eventId)).slice(0, 22),
+      rt = await rows(meta, "04_RECIPES", cols.recipes),
+      ct = await rows(meta, "05_RECIPE_COMPONENTS", cols.components);
+    if (rt.values.some((r: any[]) => r[0] === recipeId))
+      throw new AppError(
+        409,
+        "This recipe revision already appears in Vision. Nothing was appended.",
+      );
+    const components = [];
+    for (let i = 0; i < r.lines.length; i++) {
+      const line = r.lines[i],
+        a = approved(line.itemId),
+        cost = c.lines[i];
+      components.push([
+        "C-" + recipeId + "-" + (i + 1),
+        recipeId,
+        "Ingredient",
+        a.visionId,
+        cost.name,
+        cost.qty,
+        cost.unit,
+        cost.unitCost,
+        cost.value,
+        "Recipe revision " +
+          eventId +
+          "; " +
+          cost.basis +
+          "; " +
+          (cost.reason || "cost snapshot"),
+      ]);
+    }
+    blocks.push(
+      await block(rt, "04_RECIPES", cols.recipes, [
+        [
+          recipeId,
+          r.name,
+          r.type,
+          c.yieldQty,
+          r.yieldUnit,
+          null,
+          null,
+          c.total,
+          null,
+          null,
+          null,
+          c.perPortion,
+          null,
+          "Yes",
+        ],
+      ]),
+    );
+    blocks.push(
+      await block(ct, "05_RECIPE_COMPONENTS", cols.components, components),
+    );
+    summary =
+      "Publish this finalised recipe revision and its ingredient components. Labour and full production cost remain unknown; no stock is used.";
+  } else
+    throw new AppError(
+      400,
+      "Only reviewed ingredients, active waste entries and finalised recipe cards can post here.",
+    );
+  const base = {
+      eventId,
+      entityId: e.entity_id,
+      summary,
+      blocks,
+      ...(visionId ? { visionId } : {}),
+    },
+    approval = await hash(canonical(base));
+  return { ...base, approval };
+}
+function requestsFor(p: any) {
+  return p.blocks.map((b: any) => ({
+    updateCells: {
+      range: {
+        sheetId: b.sheetId,
+        startRowIndex: b.start,
+        endRowIndex: b.start + b.rows.length,
+        startColumnIndex: 0,
+        endColumnIndex: b.headers.length,
+      },
+      rows: b.rows.map((r: any[]) => ({ values: r.map(valueCell) })),
+      fields: "userEnteredValue",
+    },
+  }));
+}
+export async function POST(req: Request) {
+  let lockOwner = "",
+    token = "",
+    marked = false,
+    key = "";
+  try {
+    const user = await identity(req, true);
+    permitSheets(user);
+    const owner = user.id,
+      input = await body(req),
+      eventId = cleanId(input.eventId),
+      db = database();
+    if (!["preview", "commit"].includes(input.mode))
+      throw new AppError(400, "Choose preview or commit.");
+    key = await hash(owner + ":" + eventId);
+    const previous = await db
+      .prepare("SELECT status,result FROM vision_postings WHERE key=?")
+      .bind(key)
+      .first<any>();
+    if (previous?.status === "confirmed")
+      return json({ ...JSON.parse(previous.result), alreadyConfirmed: true });
+    if (previous)
+      throw new AppError(
+        409,
+        "An earlier posting attempt needs reconciliation in Vision. Automatic retry is blocked to prevent duplicates.",
+      );
+    if (input.mode === "preview")
+      return json({ status: "success", ...(await plan(owner, eventId)) });
+    token = crypto.randomUUID();
+    const now = Date.now();
+    await db
+      .prepare(
+        "INSERT INTO vision_locks(owner,token,expires_at) VALUES(?,?,?) ON CONFLICT(owner) DO UPDATE SET token=excluded.token,expires_at=excluded.expires_at WHERE expires_at < ?",
+      )
+      .bind(SHEET, token, now + 180000, now)
+      .run();
+    const lock = await db
+      .prepare("SELECT token FROM vision_locks WHERE owner=?")
+      .bind(SHEET)
+      .first<any>();
+    if (lock?.token !== token)
+      throw new AppError(
+        409,
+        "Another device is posting. Wait for it to finish.",
+      );
+    lockOwner = SHEET;
+    const p = await plan(owner, eventId);
+    if (p.approval !== input.approval)
+      throw new AppError(
+        409,
+        "The proposed rows or workbook changed. Preview again before approving.",
+      );
+    await db
+      .prepare(
+        "INSERT INTO vision_postings(key,owner,record_id,kind,hash,status,updated_at) VALUES(?,?,?,?,?,?,?)",
+      )
+      .bind(key, owner, eventId, "sheets", p.approval, "attempting", now)
+      .run();
+    marked = true;
+    await invoke("batch_update_spreadsheet", {
+      spreadsheet_id: SHEET,
+      requests: requestsFor(p),
+      include_spreadsheet_in_response: false,
+    });
+    for (const b of p.blocks) {
+      const actual = await cells(b.range);
+      for (let i = 0; i < b.rows.length; i++)
+        for (let j = 0; j < b.headers.length; j++) {
+          const v = b.rows[i][j],
+            cell = actual[i]?.values?.[j]?.userEnteredValue || {},
+            expected = valueCell(v).userEnteredValue || {};
+          if (canonical(cell) !== canonical(expected))
+            throw new AppError(
+              502,
+              "Vision write returned, but read-back did not match. Reconcile the displayed record ID before retrying.",
+            );
+        }
+    }
+    const result = {
+      status: "success",
+      eventId,
+      visionId: p.visionId || null,
+      confirmedAt: Date.now(),
+      ranges: p.blocks.map((b) => b.range),
+    };
+    await db
+      .prepare(
+        "UPDATE vision_postings SET status=?,result=?,updated_at=? WHERE key=?",
+      )
+      .bind("confirmed", JSON.stringify(result), Date.now(), key)
+      .run();
+    return json(result);
+  } catch (e) {
+    if (marked)
+      await database()
+        .prepare("UPDATE vision_postings SET status=?,updated_at=? WHERE key=?")
+        .bind("needs_reconciliation", Date.now(), key)
+        .run()
+        .catch(() => {});
+    return connectionFailure(e) || fail(e);
+  } finally {
+    if (lockOwner)
+      await database()
+        .prepare("DELETE FROM vision_locks WHERE owner=? AND token=?")
+        .bind(lockOwner, token)
+        .run()
+        .catch(() => {});
+  }
+}
