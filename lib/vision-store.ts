@@ -57,17 +57,15 @@ export function database() {
             .eq("owner", args[0])
             .maybeSingle();
         else if (sql.startsWith("INSERT INTO vision_postings"))
-          q = db
-            .from("vision_postings")
-            .insert({
-              key: args[0],
-              owner: args[1],
-              record_id: args[2],
-              kind: args[3],
-              hash: args[4],
-              status: args[5],
-              updated_at: args[6],
-            });
+          q = db.from("vision_postings").insert({
+            key: args[0],
+            owner: args[1],
+            record_id: args[2],
+            kind: args[3],
+            hash: args[4],
+            status: args[5],
+            updated_at: args[6],
+          });
         else if (sql.startsWith("UPDATE vision_postings SET status=?,result="))
           q = db
             .from("vision_postings")

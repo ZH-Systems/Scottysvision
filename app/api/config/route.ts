@@ -4,6 +4,8 @@ export function GET() {
   const c = config();
   return json({
     status: "success",
+    vapidPublicKey: process.env.VAPID_PUBLIC_KEY || "",
+    ocrConfigured: !!process.env.VISION_OCR_API_URL,
     url: c.url,
     anonKey: c.anon,
     bucket: process.env.SUPABASE_STORAGE_BUCKET || "vision-attachments",

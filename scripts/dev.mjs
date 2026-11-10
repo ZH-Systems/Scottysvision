@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { spawn } from "node:child_process";
 // The managed preview supplies Vite-style flags; translate them for Next.
 const args = process.argv.slice(2),
@@ -14,7 +15,11 @@ for (let i = 0; i < args.length; i++) {
 if (!nextArgs.includes("--hostname")) nextArgs.push("--hostname", "0.0.0.0");
 const child = spawn(
   process.execPath,
-  ["node_modules/next/dist/bin/next", "dev", "--webpack", ...nextArgs],
+  [
+    "node_modules/next/dist/bin/next",
+    ...(existsSync(".preview-production") ? ["start"] : ["dev", "--webpack"]),
+    ...nextArgs,
+  ],
   { stdio: "inherit" },
 );
 for (const signal of ["SIGTERM", "SIGINT"])

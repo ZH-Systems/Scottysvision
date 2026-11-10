@@ -15,12 +15,14 @@ import {
 } from "@/lib/local";
 const C: any = core;
 export function Invoices() {
-  const { state, catalog, addEvent, request, notify } = useKitchen(),
+  const { state, catalog, addEvent, request, notify, update, sync } =
+      useKitchen(),
     [draft, setDraft] = useState<any>(null),
     [view, setView] = useState<any>(null),
     [ingredient, setIngredient] = useState<any>(null),
     [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [ocr, setOcr] = useState<any>(null);
   const list = state.events
     .filter((e: any) => e.kind === "invoice")
     .sort((a: any, b: any) => b.at - a.at);
@@ -36,7 +38,7 @@ export function Invoices() {
     if (!draft) return;
     const t = setTimeout(
       () =>
-        writeLocal("state", draft, "invoiceDraft").catch((e) =>
+        update((s: any) => ({ ...s, invoiceDraft: draft })).catch((e: Error) =>
           notify(e.message),
         ),
       300,
@@ -44,7 +46,8 @@ export function Invoices() {
     return () => clearTimeout(t);
   }, [draft, notify]);
   async function open() {
-    const old = await readLocal("state", "invoiceDraft");
+    const old =
+      state.invoiceDraft || (await readLocal("state", "invoiceDraft"));
     setDraft(
       old || {
         id: uid(),
@@ -104,6 +107,7 @@ export function Invoices() {
         throw Error("Attach a receipt or enter at least one line.");
       await addEvent("invoice", draft.id, draft);
       await writeLocal("state", null, "invoiceDraft");
+      await update((s: any) => ({ ...s, invoiceDraft: null }));
       setDraft(null);
       notify("Invoice saved for review. Prices and stock are unchanged.");
     } catch (e) {
@@ -177,8 +181,8 @@ export function Invoices() {
       {draft && (
         <Modal
           onClose={() => {
-            writeLocal("state", draft, "invoiceDraft").catch((e: Error) =>
-              notify(e.message),
+            update((s: any) => ({ ...s, invoiceDraft: draft })).catch(
+              (e: Error) => notify(e.message),
             );
             setDraft(null);
           }}
@@ -232,6 +236,31 @@ export function Invoices() {
                   <small>Saved locally</small>
                 </div>
               ))}
+            </div>
+            <div className="actions">
+              <button
+                type="button"
+                disabled={busy || !draft.attachments.length}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await update((s: any) => ({ ...s, invoiceDraft: draft }));
+                    await sync();
+                    const r = await request("/api/ocr", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ fileId: draft.attachments[0].id }),
+                    });
+                    setOcr(r);
+                  } catch (e) {
+                    setError((e as Error).message);
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Extract & verify receipt
+              </button>
             </div>
             <h3 style={{ marginTop: 24 }}>Ingredient lines</h3>
             {draft.lines.map((l: any, i: number) => (
@@ -422,6 +451,40 @@ export function Invoices() {
             );
           })}
           <p>{view.data.notes}</p>
+          <div className="actions">
+            <button
+              disabled={busy || !["owner", "manager"].includes(state.role)}
+              onClick={async () => {
+                if (
+                  !window.confirm(
+                    "Approve this reviewed invoice and receive its quantities into Kitchen stock?",
+                  )
+                )
+                  return;
+                setBusy(true);
+                try {
+                  await sync();
+                  await request("/api/operations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      id: uid(),
+                      kind: "receipt",
+                      invoiceEventId: view.id,
+                      location: "Kitchen",
+                    }),
+                  });
+                  notify("Invoice approved. Stock receipt confirmed.");
+                } catch (e) {
+                  notify((e as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              Approve invoice & receive stock
+            </button>
+          </div>
           <button
             onClick={() => {
               setDraft({ ...clone(view.data), id: uid(), reviews: view.id });
@@ -434,6 +497,69 @@ export function Invoices() {
             Invoice intake is evidence. Updating a cost requires a separate
             reviewed ingredient save.
           </p>
+        </Modal>
+      )}
+      {ocr && (
+        <Modal onClose={() => setOcr(null)}>
+          <h2>Review extracted invoice</h2>
+          <p>
+            {ocr.invoice.vendor || "Vendor unknown"} ·{" "}
+            {ocr.invoice.number || "Number unknown"} ·{" "}
+            {ocr.invoice.date || "Date unknown"}
+          </p>
+          <p>
+            Verification: {ocr.verification}. Prices and stock remain unchanged.
+          </p>
+          {ocr.invoice.warnings.map((w: string) => (
+            <p className="notice warning" key={w}>
+              {w}
+            </p>
+          ))}
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Packages</th>
+                <th>Package amount</th>
+                <th>Net subtotal</th>
+                <th>Tax</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ocr.invoice.lines.map((l: any, i: number) => (
+                <tr key={i}>
+                  <td>{l.description}</td>
+                  <td>{l.packages || "Unknown"}</td>
+                  <td>
+                    {l.packQty || "Unknown"} {l.packUnit}
+                  </td>
+                  <td>{l.netSubtotal || "Unknown"}</td>
+                  <td>{l.tax || "Unknown"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button
+            className="primary"
+            onClick={() => {
+              setDraft((d: any) => ({
+                ...d,
+                ...ocr.invoice,
+                attachments: d.attachments,
+                notes: [d.notes, ocr.invoice.notes, ...ocr.invoice.warnings]
+                  .filter(Boolean)
+                  .join("\n"),
+                ocrEvidence: {
+                  fileId: ocr.fileId,
+                  verification: ocr.verification,
+                  reviewedAt: Date.now(),
+                },
+              }));
+              setOcr(null);
+            }}
+          >
+            Use these values as an editable review draft
+          </button>
         </Modal>
       )}
       {ingredient && (

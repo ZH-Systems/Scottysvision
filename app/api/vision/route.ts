@@ -476,7 +476,7 @@ export async function POST(req: Request) {
   try {
     const user = await identity(req, true);
     permitSheets(user);
-    const owner = user.id,
+    const owner = user.scope,
       input = await body(req),
       eventId = cleanId(input.eventId),
       db = database();

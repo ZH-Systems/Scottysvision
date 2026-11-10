@@ -1,6 +1,6 @@
 import "server-only";
 import { GoogleAuth } from "google-auth-library";
-import { AppError } from "./server";
+import { AppError, requireRole } from "./server";
 export const SHEET = process.env.VISION_SPREADSHEET_ID || "";
 async function client() {
   if (
@@ -82,7 +82,8 @@ export function requireTab(meta: any, name: string, min: number) {
 export function connectionFailure(_e: unknown) {
   return null;
 }
-export function permitSheets(user: { email?: string }) {
+export function permitSheets(user: { email?: string; role: string }) {
+  requireRole(user);
   const list = (process.env.VISION_SHEETS_ALLOWED_EMAILS || "")
     .split(",")
     .map((s) => s.trim().toLowerCase())

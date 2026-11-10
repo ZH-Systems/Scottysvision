@@ -30,7 +30,7 @@ export function admin() {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
-export async function identity(req: Request, write = false) {
+export async function authenticate(req: Request, write = false) {
   if (write) {
     const target = new URL(req.url);
     // Next may normalize Request.url to localhost behind its Node/Vercel adapter.
@@ -128,14 +128,54 @@ export async function checked<T>(
   query: PromiseLike<{ data: T; error: any }>,
 ): Promise<T> {
   const { data, error } = await query;
-  if (error)
+  if (error) {
+    const status =
+      error.code === "42501"
+        ? 403
+        : error.code === "23505" || error.code === "P0001"
+          ? 409
+          : 502;
     throw new AppError(
-      error.code === "23505" ? 409 : 502,
-      error.code === "23505"
-        ? "A conflicting record exists. Export a backup and review."
+      status,
+      ["42501", "23505", "P0001"].includes(error.code)
+        ? String(error.message || "This operation needs review.").slice(0, 400)
         : "Supabase could not confirm this operation. Check the migration and configuration.",
     );
+  }
   return data;
 }
 export const bucketName = () =>
   process.env.SUPABASE_STORAGE_BUCKET || "vision-attachments";
+
+export const roleLevel: Record<string, number> = {
+  viewer: 0,
+  staff: 1,
+  manager: 2,
+  owner: 3,
+};
+export function requireRole(user: { role: string }, minimum = "manager") {
+  if ((roleLevel[user.role] ?? -1) < roleLevel[minimum])
+    throw new AppError(403, minimum + " permission is required.");
+}
+export async function identity(req: Request, write = false, minimum = "staff") {
+  const u = await authenticate(req, write),
+    db = admin(),
+    scope = req.headers.get("x-vision-workspace") || u.id;
+  if (!/^[0-9a-f-]{36}$/i.test(scope))
+    throw new AppError(400, "Invalid kitchen.");
+  if (scope === u.id)
+    await checked(db.rpc("vision_bootstrap", { p_user: u.id }));
+  const membership: any = await checked(
+    db
+      .from("vision_memberships")
+      .select("role")
+      .eq("workspace_id", scope)
+      .eq("user_id", u.id)
+      .maybeSingle(),
+  );
+  if (!membership)
+    throw new AppError(403, "You are not a member of this kitchen.");
+  const result = { ...u, scope, role: membership.role as string };
+  if (write) requireRole(result, minimum);
+  return result;
+}

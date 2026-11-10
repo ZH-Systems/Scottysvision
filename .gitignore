@@ -6,3 +6,10 @@ node_modules/
 next-env.d.ts
 .vercel/
 coverage/
+
+.preview-production
+
+__pycache__/
+*.pyc
+
+public/qa-responsive.html

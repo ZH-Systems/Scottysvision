@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       db
         .from("vision_files")
         .select("hash")
-        .eq("owner", user.id)
+        .eq("owner", user.scope)
         .eq("file_id", id)
         .maybeSingle(),
     );
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
         throw new AppError(409, "File ID belongs to different bytes.");
       return json({ status: "success", id, confirmed: true });
     }
-    const key = user.id + "/" + id + "/" + x.hash;
+    const key = user.scope + "/" + id + "/" + x.hash;
     if (x.mode === "prepare") {
       const recovered = await db.storage.from(bucketName()).download(key);
       if (recovered.data) {
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
         ) {
           const row = {
             key,
-            owner: user.id,
+            owner: user.scope,
             file_id: id,
             name: String(x.name || "receipt").slice(0, 200),
             mime: x.type,
@@ -72,12 +72,10 @@ export async function POST(req: Request) {
             hash: x.hash,
             created_at: Date.now(),
           };
-          const { error } = await db
-            .from("vision_files")
-            .upsert(row, {
-              onConflict: "owner,file_id",
-              ignoreDuplicates: true,
-            });
+          const { error } = await db.from("vision_files").upsert(row, {
+            onConflict: "owner,file_id",
+            ignoreDuplicates: true,
+          });
           if (error)
             throw new AppError(
               502,
@@ -87,7 +85,7 @@ export async function POST(req: Request) {
             db
               .from("vision_files")
               .select("hash")
-              .eq("owner", user.id)
+              .eq("owner", user.scope)
               .eq("file_id", id)
               .maybeSingle(),
           );
@@ -118,24 +116,22 @@ export async function POST(req: Request) {
         400,
         "Uploaded file did not match its verified metadata.",
       );
-    const { error } = await db
-      .from("vision_files")
-      .insert({
-        key,
-        owner: user.id,
-        file_id: id,
-        name: String(x.name || "receipt").slice(0, 200),
-        mime: x.type,
-        size: x.size,
-        hash: x.hash,
-        created_at: Date.now(),
-      });
+    const { error } = await db.from("vision_files").insert({
+      key,
+      owner: user.scope,
+      file_id: id,
+      name: String(x.name || "receipt").slice(0, 200),
+      mime: x.type,
+      size: x.size,
+      hash: x.hash,
+      created_at: Date.now(),
+    });
     if (error) {
       const row: any = await checked(
         db
           .from("vision_files")
           .select("hash")
-          .eq("owner", user.id)
+          .eq("owner", user.scope)
           .eq("file_id", id)
           .maybeSingle(),
       );
@@ -156,7 +152,7 @@ export async function GET(req: Request) {
         db
           .from("vision_files")
           .select("key")
-          .eq("owner", u.id)
+          .eq("owner", u.scope)
           .eq("file_id", id)
           .maybeSingle(),
       );

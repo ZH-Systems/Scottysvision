@@ -53,6 +53,15 @@ try {
     ["files", "GET"],
     ["sync", "POST"],
     ["vision", "POST"],
+    ["operations", "GET"],
+    ["operations", "POST"],
+    ["workspaces", "GET"],
+    ["workspaces", "POST"],
+    ["ocr", "POST"],
+    ["push", "POST"],
+    ["reconciliation", "GET"],
+    ["reconciliation", "POST"],
+    ["cron/reminders", "GET"],
   ]) {
     const r = await fetch(base + "/api/" + path, {
       method,
@@ -77,6 +86,16 @@ try {
   const sw = await (await fetch(base + "/sw.js")).text();
   assert.ok(sw.includes("vision-react-"));
   assert.ok(!sw.includes("__BUILD_HASH__"));
+  const manifest = await (await fetch(base + "/offline-manifest.json")).json();
+  assert.ok(
+    manifest.assets.some(
+      (p) => p.endsWith(".js") && p.startsWith("/_next/static/"),
+    ),
+  );
+  for (const path of manifest.assets) {
+    const r = await fetch(base + path);
+    assert.equal(r.status, 200, "Precached asset " + path);
+  }
   console.log(
     "PASS production HTTP smoke: React shell, public-only configuration, authentication required on every data endpoint, foreign-origin write rejection, versioned offline worker.",
   );

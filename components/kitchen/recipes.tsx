@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { productionCost } from "@/lib/core/production.mjs";
 import * as core from "@/lib/core/kitchen.mjs";
 import { useKitchen } from "./provider";
 import { Heading, Field, Modal, UnitSelect } from "./ui";
@@ -21,9 +22,13 @@ export function Recipes({
     [saving, setSaving] = useState(false);
   const r = state.draft,
     heads = C.currentRecipes(state.events);
-  let cost: any = null;
+  let cost: any = null,
+    fullCost: any = null;
   try {
-    if (r) cost = C.recipeCost(r, catalog);
+    if (r) {
+      cost = C.recipeCost(r, catalog);
+      fullCost = productionCost(r, catalog);
+    }
   } catch (e) {
     cost = { error: (e as Error).message };
   }
@@ -69,6 +74,7 @@ export function Recipes({
       const e = await addEvent("recipe", r.id, {
         recipe,
         costingSnapshot: C.recipeCost(r, catalog),
+        productionSnapshot: productionCost(r, catalog),
         finalized,
         parentRevision,
       });
@@ -128,6 +134,14 @@ export function Recipes({
               {x.yieldQty || "Not measured"} {x.yieldQty ? x.yieldUnit : ""}
             </b>
           </p>
+          <p>
+            Selling price before tax:{" "}
+            <b>
+              {c.price == null
+                ? "Not recorded"
+                : money(c.price) + " / " + x.yieldUnit}
+            </b>
+          </p>
           <div className="scroll-table">
             <table>
               <thead>
@@ -160,6 +174,9 @@ export function Recipes({
             </table>
           </div>
           <CostBar cost={c} unit={x.yieldUnit} />
+          {e.data.productionSnapshot && (
+            <ProductionCost cost={e.data.productionSnapshot} />
+          )}
           {x.notes && (
             <>
               <h2>Method & notes</h2>
@@ -252,6 +269,36 @@ export function Recipes({
               />
             </label>
           </div>
+          <details>
+            <summary>Labour & overhead costing</summary>
+            <div className="row">
+              <Field
+                label="Labour minutes per batch"
+                name="labourMinutes"
+                inputMode="decimal"
+                value={r.labourMinutes ?? ""}
+                onChange={(e) => patch("labourMinutes", e.target.value)}
+              />
+              <Field
+                label="Actual hourly labour rate, CAD"
+                name="labourRate"
+                inputMode="decimal"
+                value={r.labourRate ?? ""}
+                onChange={(e) => patch("labourRate", e.target.value)}
+              />
+            </div>
+            <Field
+              label="Other overhead per batch, CAD"
+              name="overheadPerBatch"
+              inputMode="decimal"
+              value={r.overheadPerBatch ?? ""}
+              onChange={(e) => patch("overheadPerBatch", e.target.value)}
+            />
+            <p className="muted">
+              Unknown costs stay blank. Enter zero explicitly when a component
+              has no cost.
+            </p>
+          </details>
           <div className="toolbar">
             <h2>Ingredients</h2>
             <button onClick={() => setPick(true)}>＋ Add ingredient</button>
@@ -355,7 +402,12 @@ export function Recipes({
             </button>
           </div>
         </section>
-        {cost && !cost.error && <CostBar cost={cost} unit={r.yieldUnit} />}
+        {cost && !cost.error && (
+          <>
+            <CostBar cost={cost} unit={r.yieldUnit} />
+            <ProductionCost cost={fullCost} />
+          </>
+        )}
         <p className="muted">
           Ingredient margin excludes labour, overhead, packaging not entered and
           tax. A blank cost never counts as zero.
@@ -498,5 +550,25 @@ function CostBar({ cost: c, unit }: { cost: any; unit: string }) {
         <strong>{c.margin === null ? "—" : c.margin.toFixed(1) + "%"}</strong>
       </span>
     </div>
+  );
+}
+
+function ProductionCost({ cost: c }: { cost: any }) {
+  return (
+    <section className="panel">
+      <h3>Full recorded production cost</h3>
+      <p>
+        Labour: {money(c.labourCost)} · Overhead: {money(c.overhead)} · Total
+        per batch: <b>{money(c.total)}</b>
+      </p>
+      <p>
+        Per yield unit: {money(c.perPortion)} · Margin after recorded production
+        costs: {c.margin == null ? "Unknown" : c.margin.toFixed(1) + "%"}
+      </p>
+      <small>
+        This covers entered costs. Unentered operating expenses, selling fees
+        and tax are not assumed.
+      </small>
+    </section>
   );
 }

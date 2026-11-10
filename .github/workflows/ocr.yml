@@ -1,0 +1,17 @@
+name: Verify receipt extraction
+on:
+  push:
+    paths: ['services/receipt-ocr/**', '.github/workflows/ocr.yml']
+  pull_request:
+    paths: ['services/receipt-ocr/**', '.github/workflows/ocr.yml']
+jobs:
+  ocr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+      - run: pip install -r services/receipt-ocr/requirements.txt
+      - run: python -m unittest discover -s services/receipt-ocr -p 'test_*.py'

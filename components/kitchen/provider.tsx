@@ -9,6 +9,11 @@ import React, {
 } from "react";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import * as core from "@/lib/core/kitchen.mjs";
+import {
+  trackDraftChanges,
+  prepareDrafts,
+  acknowledgeDrafts,
+} from "@/lib/core/drafts.mjs";
 import WasteCore from "@/lib/core/waste.js";
 import WingCore from "@/lib/core/wings.js";
 import {
@@ -44,7 +49,7 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
     retry = useRef(0);
   const notify = useCallback((s: string) => setMessage(s), []);
   const update = useCallback(async (fn: (s: KitchenState) => KitchenState) => {
-    const next = fn(clone(ref.current));
+    const next = trackDraftChanges(ref.current, fn(clone(ref.current)));
     ref.current = next;
     setState(next);
     const job = saveQueue.current
@@ -68,16 +73,14 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
       const { data } = await auth.auth.getSession();
       if (!data.session)
         throw Error("Sign in from Sync to back up this device.");
-      if (ref.current.owner && ref.current.owner !== data.session.user.id)
-        throw Error(
-          "Device records belong to another account. Export a backup before changing account.",
-        );
+
       const r = await fetch(url, {
         ...options,
         cache: "no-store",
         headers: {
           ...options.headers,
           Authorization: "Bearer " + data.session.access_token,
+          "X-Vision-Workspace": ref.current.workspaceId || data.session.user.id,
         },
       });
       let dataOut;
@@ -96,8 +99,23 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
     [],
   );
   const addEvents = useCallback(
-    async (events: KitchenEvent[]) =>
-      update((s) => ({ ...s, events: C.mergeEvents(s.events, events) })),
+    async (events: KitchenEvent[]) => {
+      const role = ref.current.role;
+      if (role === "viewer")
+        throw Error("Viewer accounts cannot change kitchen records.");
+      if (
+        role === "staff" &&
+        events.some(
+          (e) =>
+            e.kind === "ingredient" ||
+            (e.kind === "settings" && e.entityId === "waste-lists"),
+        )
+      )
+        throw Error(
+          "Manager permission is required for ingredient and staff setup.",
+        );
+      return update((s) => ({ ...s, events: C.mergeEvents(s.events, events) }));
+    },
     [update],
   );
   const addEvent = useCallback(
@@ -116,7 +134,7 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
   );
   const sync = useCallback(() => {
     if (syncTask.current) return syncTask.current;
-    const job = (async () => {
+    const run = async () => {
       locked.current = true;
       setBusy(true);
       try {
@@ -129,11 +147,31 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
         } = await a.auth.getUser();
         if (error || !u)
           throw Error("Sign in from Sync to back up this device.");
-        if (ref.current.owner && ref.current.owner !== u.id)
+        if (
+          ref.current.owner &&
+          ref.current.owner !== (ref.current.workspaceId || u.id)
+        )
           throw Error(
             "Device records belong to another account. Export a backup before changing account.",
           );
-        await update((s) => ({ ...s, owner: u.id }));
+        const spaces = await request("/api/workspaces");
+        const workspaceId = ref.current.workspaceId || u.id;
+        const active = spaces.workspaces.find((x: any) => x.id === workspaceId);
+        if (!active)
+          throw Error("Select a kitchen that this account can access.");
+        await update((s) =>
+          prepareDrafts(
+            {
+              ...s,
+              owner: workspaceId,
+              workspaceId,
+              workspaces: spaces.workspaces,
+              role: active.role,
+            },
+            uid,
+            Date.now(),
+          ),
+        );
         let more = true;
         while (more) {
           const current = ref.current,
@@ -147,17 +185,29 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
               events: chunk,
               since: current.cursor,
               catalog:
-                current.catalogAcked &&
-                current.catalogSentAt === (current.catalogAt || 0)
+                current.role === "viewer" ||
+                current.role === "staff" ||
+                (current.catalogAcked &&
+                  current.catalogSentAt === (current.catalogAt || 0))
                   ? []
                   : current.source,
               catalogAt: current.catalogAt || 0,
+              drafts:
+                current.role === "viewer"
+                  ? []
+                  : (current.draftOutbox || []).slice(0, 40),
             }),
           });
           if (!Array.isArray(r.ack) || chunk.some((e) => !r.ack.includes(e.id)))
             throw Error("Supabase did not acknowledge every record.");
           await update((s) => ({
-            ...s,
+            ...acknowledgeDrafts(
+              s,
+              current.role === "viewer"
+                ? []
+                : (current.draftOutbox || []).slice(0, 40),
+              r.drafts,
+            ),
             events: C.mergeEvents(s.events, r.events || []),
             acked: [
               ...new Set([
@@ -175,15 +225,27 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
           }));
           more =
             r.more ||
-            ref.current.events.some((e) => !ref.current.acked.includes(e.id));
+            ref.current.events.some((e) => !ref.current.acked.includes(e.id)) ||
+            (ref.current.role !== "viewer" &&
+              (ref.current.draftOutbox || []).length > 0);
         }
         const used = new Set(
           ref.current.events
             .filter((e) => e.kind === "invoice")
-            .flatMap((e) => e.data.attachments.map((x: any) => x.id)),
+            .flatMap((e) => e.data.attachments.map((x: any) => x.id))
+            .concat(
+              (ref.current.invoiceDraft?.attachments || []).map(
+                (x: any) => x.id,
+              ),
+            ),
         );
         for (const file of await readLocal("files"))
-          if (!file.synced && used.has(file.id)) {
+          if (
+            !(file.syncedScopes || []).includes(
+              ref.current.workspaceId || ref.current.owner,
+            ) &&
+            used.has(file.id)
+          ) {
             const bytes = await file.blob.arrayBuffer(),
               digest = [
                 ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)),
@@ -216,7 +278,16 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
                 body: JSON.stringify({ ...meta, mode: "complete" }),
               });
             }
-            await writeLocal("files", { ...file, synced: true });
+            await writeLocal("files", {
+              ...file,
+              synced: true,
+              syncedScopes: [
+                ...new Set([
+                  ...(file.syncedScopes || []),
+                  ref.current.workspaceId || ref.current.owner,
+                ]),
+              ],
+            });
           }
         await update((s) => ({ ...s, lastSync: Date.now() }));
         retry.current = 0;
@@ -226,6 +297,10 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
         setBusy(false);
         syncTask.current = null;
       }
+    };
+    const job = (async () => {
+      if (navigator.locks) await navigator.locks.request("vision-sync", run);
+      else await run();
     })();
     syncTask.current = job;
     return job;
@@ -236,6 +311,8 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
     async function boot() {
       try {
         let s = { ...emptyState(), ...(await readLocal("state", "main")) };
+        s.deviceId ||= uid();
+        s.invoiceDraft ||= await readLocal("state", "invoiceDraft");
         if (!s.source.length) {
           const r = await fetch("/ingredient-cache.json");
           const seed = await r.json();
@@ -245,7 +322,9 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
         }
         // Preserve standalone logger data from the same origin. New React loggers write events directly.
         const imported: KitchenEvent[] = [];
-        const rawW = localStorage.getItem("scottys-waste-log-v1");
+        const rawW = s.legacyImported
+          ? null
+          : localStorage.getItem("scottys-waste-log-v1");
         if (rawW) {
           const w = W.validateStore(JSON.parse(rawW));
           if (!s.legacyImported)
@@ -287,7 +366,9 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
               data: { employees: w.employees, reasons: w.reasons },
             });
         }
-        const rawG = localStorage.getItem("scottys-wing-check-v1");
+        const rawG = s.legacyImported
+          ? null
+          : localStorage.getItem("scottys-wing-check-v1");
         if (rawG) {
           const g = G.validateStore(JSON.parse(rawG));
           for (const b of g.batches) {
@@ -311,25 +392,42 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
         }
         s.events = C.mergeEvents(s.events, imported);
         s.legacyImported = true;
+        if (!s.draftOutbox?.length && !s.draftHeads?.length)
+          s = trackDraftChanges({ ...s, draft: null, invoiceDraft: null }, s);
         await writeLocal("state", s, "main");
         if (cancelled) return;
         ref.current = s;
         setState(s);
         setReady(true);
-        const r = await fetch("/api/config"),
+        let c: any;
+        try {
+          const r = await fetch("/api/config");
           c = await r.json();
+          await writeLocal("state", c, "publicConfig");
+        } catch {
+          c = await readLocal("state", "publicConfig");
+          if (!c) {
+            notify(
+              "Offline. Local records are available; connect once to configure sync.",
+            );
+            return;
+          }
+        }
         setConfig(c);
         if (c.url && c.anonKey) {
           const a = createClient(c.url, c.anonKey);
           authRef.current = a;
           setClient(a);
-          const { data } = await a.auth.getUser();
-          setUser(data.user);
+          const { data } = await a.auth.getSession();
+          setUser(data.session?.user || null);
           subscription = a.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user || null);
           }).data.subscription;
         }
-        if ("serviceWorker" in navigator)
+        if (
+          process.env.NODE_ENV === "production" &&
+          "serviceWorker" in navigator
+        )
           navigator.serviceWorker
             .register("/sw.js")
             .catch(() => notify("Offline shell setup could not be confirmed."));
@@ -344,9 +442,12 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
       subscription?.unsubscribe();
     };
   }, [notify]);
-  const pending = state.events.filter(
-    (e) => !state.acked.includes(e.id),
-  ).length;
+  const pending =
+    state.role === "viewer"
+      ? 0
+      : state.events.filter((e) => !state.acked.includes(e.id)).length +
+        Object.keys(state.draftDirty || {}).length +
+        (state.draftOutbox || []).length;
   useEffect(() => {
     if (!ready || !state.autoSync || !user) return;
     const run = () => {
@@ -455,11 +556,39 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
       events: C.mergeEvents(s.events, incoming),
       source: s.source.length ? s.source : v.state?.source || [],
       draft: s.draft || v.state?.draft || null,
+      invoiceDraft: s.invoiceDraft || v.state?.invoiceDraft || null,
+      wingRounds: s.wingRounds || v.state?.wingRounds || {},
+      wingSound: s.wingSound ?? v.state?.wingSound ?? false,
+      wasteSettings: s.wasteSettings || v.state?.wasteSettings || null,
     }));
     notify(
       "Backup merged locally. Sync will verify and back up the imported records.",
     );
   }
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const handler = async (e: MessageEvent) => {
+      if (e.data?.type === "VISION_OPEN_WINGS") {
+        location.hash = "wings";
+        return;
+      }
+      if (e.data?.type === "VISION_BACKGROUND_SYNC") {
+        const saved = await readLocal("state", "main");
+        if (saved?.workspaceId === ref.current.workspaceId)
+          await update((s) => ({
+            ...s,
+            events: C.mergeEvents(s.events, saved.events),
+            acked: [...new Set([...s.acked, ...saved.acked])],
+            cursor: Math.max(s.cursor, saved.cursor),
+            draftHeads: saved.draftHeads,
+            lastSync: saved.lastSync,
+          }));
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", handler);
+    return () =>
+      navigator.serviceWorker.removeEventListener("message", handler);
+  }, [update]);
   const catalog = C.mergeCatalog(state.source, state.events);
   return (
     <Context.Provider
@@ -473,6 +602,55 @@ export function KitchenProvider({ children }: { children: React.ReactNode }) {
         busy,
         pending,
         storageError,
+        exportRecovery: async () => {
+          const values = await Promise.allSettled([
+            readLocal("state", "main"),
+            readLocal("state", "invoiceDraft"),
+          ]);
+          let legacy: any = {};
+          try {
+            legacy = {
+              legacyWaste: localStorage.getItem("scottys-waste-log-v1"),
+              legacyWings: localStorage.getItem("scottys-wing-check-v1"),
+            };
+          } catch (e) {
+            legacy = { error: String(e) };
+          }
+          download("Scottys_Original_Saved_Data_" + today() + ".json", {
+            at: Date.now(),
+            ...legacy,
+            state:
+              values[0].status === "fulfilled"
+                ? values[0].value
+                : { unavailable: String(values[0].reason) },
+            invoiceDraft:
+              values[1].status === "fulfilled"
+                ? values[1].value
+                : { unavailable: String(values[1].reason) },
+          });
+        },
+        switchWorkspace: async (id: string) => {
+          await saveQueue.current;
+          await writeLocal(
+            "state",
+            ref.current,
+            "workspace:" +
+              (ref.current.workspaceId || ref.current.owner || "local"),
+          );
+          const saved = await readLocal("state", "workspace:" + id);
+          const next = {
+            ...emptyState(),
+            ...saved,
+            workspaceId: id,
+            owner: id,
+            legacyImported: true,
+            deviceId: ref.current.deviceId,
+          };
+          ref.current = next;
+          setState(next);
+          await writeLocal("state", next, "main");
+          location.reload();
+        },
         update,
         addEvent,
         addEvents,

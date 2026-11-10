@@ -47,6 +47,7 @@ export function UnitSelect({
     <label>
       {label}
       <select value={value} onChange={(e) => onChange(e.target.value)}>
+        {value === "" && <option value="">Unknown / choose unit</option>}
         {Object.entries(C.UNITS).map(([k, v]: any) => (
           <option key={k} value={k}>
             {v.label}

@@ -56,6 +56,8 @@ export function IngredientEditor({
         ...x,
         name: x.name.trim(),
         cost,
+        reorderPoint: C.numeric(x.reorderPoint),
+        parLevel: C.numeric(x.parLevel),
         gramsEach: grams,
         mlEach: ml,
         source: x.source || "Manual review",
@@ -167,6 +169,23 @@ export function IngredientEditor({
           <small>
             Only enter measured conversions and a mapping to the same product.
           </small>
+        </details>
+        <details>
+          <summary>Stock planning</summary>
+          <div className="row">
+            <Field
+              label="Reorder point in cost units"
+              name="reorderPoint"
+              value={x.reorderPoint ?? ""}
+              onChange={(e) => patch("reorderPoint", e.target.value)}
+            />
+            <Field
+              label="Target par level in cost units"
+              name="parLevel"
+              value={x.parLevel ?? ""}
+              onChange={(e) => patch("parLevel", e.target.value)}
+            />
+          </div>
         </details>
         <small className="source">Source: {x.source || "Manual entry"}</small>
         {error && (

@@ -777,13 +777,7 @@ main.module-main {
   overflow: clip;
   isolation: isolate;
 }
-.logger-surface > main {
-  max-width: 1100px;
-}
-.waste-module .save-bar {
-  position: sticky;
-  margin-top: 24px;
-}
+
 .waste-module nav {
   position: static;
   display: flex;
@@ -832,4 +826,35 @@ main.module-main {
 }
 .logger-surface {
   background: var(--bg);
+}
+
+.waste-print-report {
+  display: none;
+}
+@media print {
+  .waste-module > .top,
+  .waste-module > .waste-interactive,
+  .waste-module > footer {
+    display: none !important;
+  }
+  .waste-module > .waste-print-report {
+    display: block !important;
+    color: #000;
+    background: #fff;
+    font: 10pt system-ui;
+    padding: 0;
+  }
+  .waste-print-report table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  .waste-print-report th,
+  .waste-print-report td {
+    border: 1px solid #888;
+    padding: 6px;
+    text-align: left;
+  }
+  .waste-print-report tr {
+    break-inside: avoid;
+  }
 }

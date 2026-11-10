@@ -1,0 +1,13 @@
+services:
+  receipt-ocr:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      OCR_SERVICE_TOKEN: ${OCR_SERVICE_TOKEN:?Set a private service token}
+      MODEL_BASE_URL: ${MODEL_BASE_URL:-}
+      MODEL_NAME: ${MODEL_NAME:-}
+      MODEL_API_KEY: ${MODEL_API_KEY:-}
+    restart: unless-stopped
+    mem_limit: 2g
+    cpus: 2

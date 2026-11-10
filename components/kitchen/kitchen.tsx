@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { KitchenProvider, useKitchen } from "./provider";
+import { BackgroundAgent } from "./background";
+import { Operations } from "./operations";
 import { Recipes } from "./recipes";
 import { Ingredients } from "./ingredients";
 import { Invoices } from "./invoices";
@@ -19,17 +21,28 @@ const C: any = core,
     ["wings", "Wings"],
     ["invoices", "Invoices"],
     ["sync", "Sync & backup"],
+    ["operations", "Stock & production"],
   ];
 export default function Kitchen() {
   return (
     <KitchenProvider>
+      <BackgroundAgent />
       <Shell />
     </KitchenProvider>
   );
 }
 function Shell() {
-  const { state, catalog, ready, pending, busy, storageError, update, notify } =
-      useKitchen(),
+  const {
+      state,
+      catalog,
+      ready,
+      pending,
+      busy,
+      storageError,
+      update,
+      notify,
+      exportRecovery,
+    } = useKitchen(),
     [screen, setScreen] = useState("home"),
     [startRecipe, setStartRecipe] = useState(false),
     [posting, setPosting] = useState<string | null>(null),
@@ -94,7 +107,14 @@ function Shell() {
         {storageError && (
           <p className="error" role="alert">
             {storageError}. Keep this screen open and export a backup. Do not
-            clear browser storage.
+            clear browser storage.{" "}
+            <button
+              onClick={() =>
+                exportRecovery().catch((e: Error) => notify(e.message))
+              }
+            >
+              Download original saved data
+            </button>
           </p>
         )}
         {!ready ? (
@@ -136,7 +156,18 @@ function Shell() {
                   ].map(([id, number, title, sub]) => (
                     <a className="card tool" href={"#" + id} key={id}>
                       <span className="tool-icon">{number}</span>
-                      <span className="arrow">↗</span>
+                      <span className="arrow" aria-hidden="true">
+                        <svg
+                          width="23"
+                          height="23"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                        >
+                          <path d="M6 18 18 6M6 6h12v12" />
+                        </svg>
+                      </span>
                       <b>{title}</b>
                       <p>{sub}</p>
                     </a>
@@ -246,7 +277,8 @@ function Shell() {
             )}{" "}
             {screen === "ingredients" && <Ingredients />}
             {screen === "invoices" && <Invoices />}
-            {screen === "sync" && <SyncView onPost={setPosting} />}{" "}
+            {screen === "sync" && <SyncView onPost={setPosting} />}
+            {screen === "operations" && <Operations />}{" "}
             {["waste", "wings"].includes(screen) && (
               <p className="module-note">
                 Saved on this device first. Use{" "}

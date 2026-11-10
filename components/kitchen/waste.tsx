@@ -1,5 +1,6 @@
 "use client";
 import React, { useMemo, useState } from "react";
+import { wasteBackup, catalogTemplate } from "@/lib/core/backups.mjs";
 import WasteCore from "@/lib/core/waste.js";
 import { useKitchen } from "./provider";
 import { IngredientEditor } from "./ingredients";
@@ -17,17 +18,26 @@ const C: any = WasteCore,
     "Customer return",
   ].map((name, i) => ({ id: "reason-" + i, name, active: true }));
 export function Waste() {
-  const { state, catalog, addEvent, addEvents, notify, backup, importBackup } =
-      useKitchen(),
+  const {
+      state,
+      catalog,
+      addEvent,
+      addEvents,
+      notify,
+      backup,
+      importBackup,
+      update,
+      exportRecovery,
+    } = useKitchen(),
     [view, setView] = useState("log"),
     [step, setStep] = useState("choose"),
     [form, setForm] = useState<any>({
-      employee: "",
+      employee: state.wasteSettings?.lastEmployee || "",
       item: "",
       reason: "",
       qty: "",
       unit: "g",
-      location: "",
+      location: state.wasteSettings?.location || "",
       notes: "",
     }),
     [search, setSearch] = useState(""),
@@ -37,8 +47,8 @@ export function Waste() {
     [edit, setEdit] = useState<any>(null),
     [person, setPerson] = useState<any>(null),
     [correct, setCorrect] = useState<any>(null),
-    [from, setFrom] = useState(""),
-    [to, setTo] = useState(""),
+    [from, setFrom] = useState(today()),
+    [to, setTo] = useState(today()),
     [filterEmployee, setFilterEmployee] = useState(""),
     [saving, setSaving] = useState(false),
     [csvPreview, setCsvPreview] = useState<any[] | null>(null);
@@ -105,6 +115,10 @@ export function Waste() {
         reasons.find((x: any) => x.id === form.reason),
       );
       await addEvent("waste", r.id, r, r.at, "waste:" + r.id);
+      await update((s: any) => ({
+        ...s,
+        wasteSettings: { lastEmployee: form.employee, location: form.location },
+      }));
       setSaved(r);
       setError("");
     } catch (e) {
@@ -179,7 +193,7 @@ export function Waste() {
             </nav>
           </div>
         </header>
-        <main>
+        <main className="waste-interactive">
           {view === "log" && !saved && (
             <>
               <div className="intro">
@@ -543,6 +557,17 @@ export function Waste() {
                   </article>
                 ))}
                 <div className="actions">
+                  <button className="secondary" onClick={() => window.print()}>
+                    Print report
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFrom("");
+                      setTo("");
+                    }}
+                  >
+                    All dates
+                  </button>
                   {["general", "vision", "inventory"].map((k) => (
                     <button
                       className="secondary"
@@ -563,6 +588,47 @@ export function Waste() {
             </>
           )}
         </main>
+        <section className="waste-print-report">
+          <h1>Scotty’s on King · Waste report</h1>
+          <p>
+            Generated {date(Date.now())} · {from || "All dates"} through{" "}
+            {to || "All dates"}
+          </p>
+          <p>
+            Priced subtotal {money(totals.value)} CAD · {totals.unpriced}{" "}
+            unpriced entries excluded · {totals.count} entries
+          </p>
+          <table>
+            <thead>
+              <tr>
+                {[
+                  "Time (Toronto)",
+                  "Item",
+                  "Qty",
+                  "Unit",
+                  "Reason",
+                  "Employee",
+                  "Cost CAD",
+                ].map((x) => (
+                  <th key={x}>{x}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((r: any) => (
+                <tr key={r.id}>
+                  <td>{date(r.at)}</td>
+                  <td>{r.itemName}</td>
+                  <td>{r.qty}</td>
+                  <td>{r.unit}</td>
+                  <td>{r.reason}</td>
+                  <td>{r.employee}</td>
+                  <td>{money(r.value)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
         <footer className="footnote">
           <strong>Good Food = Good Mood</strong> · Saved on this device. Back up
           after each shift.
@@ -668,9 +734,32 @@ export function Waste() {
           {manager === "backup" && (
             <>
               <button
-                onClick={() => backup().catch((e: Error) => notify(e.message))}
+                onClick={() =>
+                  download(
+                    "Scottys_Waste_Backup_" + today() + ".json",
+                    wasteBackup(state, catalog),
+                  )
+                }
               >
-                Download backup
+                Download waste-only backup
+              </button>
+              <button
+                onClick={() =>
+                  download(
+                    "Scottys_Ingredient_Template.csv",
+                    catalogTemplate,
+                    "text/csv",
+                  )
+                }
+              >
+                Download CSV template
+              </button>
+              <button
+                onClick={() =>
+                  exportRecovery().catch((e: Error) => notify(e.message))
+                }
+              >
+                Download unreadable original
               </button>
               <Field
                 label="Import logger JSON"
@@ -705,8 +794,19 @@ export function Waste() {
               {csvPreview && (
                 <>
                   <p>
-                    {csvPreview.length} ingredient rows ready. Prices remain
-                    unreviewed.
+                    {csvPreview.length} ingredient rows:{" "}
+                    {
+                      csvPreview.filter((x: any) =>
+                        catalog.some((y: any) => y.id === x.id),
+                      ).length
+                    }{" "}
+                    updates,{" "}
+                    {
+                      csvPreview.filter(
+                        (x: any) => !catalog.some((y: any) => y.id === x.id),
+                      ).length
+                    }{" "}
+                    additions. Prices remain unreviewed.
                   </p>
                   <button
                     onClick={() =>

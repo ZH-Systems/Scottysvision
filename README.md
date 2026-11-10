@@ -1,119 +1,131 @@
 # Scotty’s Vision Kitchen
 
-The kitchen companion from the original Scotty’s artifact, migrated to **React 19 + Next.js 16** for Vercel, with **Supabase Auth, Postgres and private file storage**. The original cream/green/orange design, large touch controls, CAD costing and Toronto timestamps are retained.
+The original Scotty’s kitchen artifact rebuilt in **React 19, TypeScript and Next.js 16**, ready for Vercel. Its cream, green and orange styling, touch controls, CAD costing and Toronto timestamps are retained. The original source is preserved in `archive/sites-original`.
 
-## What it does
+## Capabilities
 
-- Recipe builder with live ingredient costing, measured conversions, reviewed overrides, retained cost snapshots, printable cards and concurrent revision branches.
-- Ingredient catalog with the original 213 bundled ingredients, reviewed prices, CSV imports, live Sheets refresh and approved Vision mappings.
-- Two-step waste logging with a numeric keypad, staff/reason management, corrections that preserve originals, totals and three CSV export formats.
-- Wing batches with per-tray cooking/cooling records, derived deadlines, actual-time corrections, oven-out corrections, notes, discard records, printable history and optional audible reminders.
-- Invoice/photo/PDF intake with manual package-price review. No automatic OCR, price approval, purchase posting or inventory receipt is implied.
-- Local device storage, automatic retrying Supabase sync while open, JSON backup/import and private receipt file upload.
-- Explicit Google Sheets preview → approval → write → read-back. Local/Supabase logging does not wait for a workbook write.
+- Recipes: live ingredient costing, measured conversions, reviewed overrides, immutable final cards, printed cards, selling prices, labour and overhead costing, margin calculations and explicit concurrent revision branches.
+- Ingredients: the original 213 reference ingredients, reviewed prices, CSV import/template, Sheets refresh, Vision mappings, reorder points and par levels. Missing prices and conversions remain unknown.
+- Waste: original two-step keypad workflow, employees and reasons, remembered form selections, corrections preserving originals, date filters, printable totals, three CSV formats and standalone JSON backups.
+- Wings: per-tray cooking and cooling records, actual-time corrections, deadlines, notes, discards, history printing, original guidance, audible reminders and optional scheduled Web Push.
+- Invoices: camera/photo/PDF attachment, manual review, optional OCR and independent verification, editable extracted candidates, reviewed price updates and explicitly approved stock receipts. Extraction does not approve a price or receive stock.
+- Stock and production: purchase receipts, reasoned count adjustments, location transfers, finalized-recipe consumption and output, low-stock indicators and reversing movements. Duplicate invoice receipts and stale count adjustments are rejected transactionally. No opening stock is invented.
+- Shared kitchens: individual Supabase accounts, owner/manager/staff/viewer roles, kitchen switching, membership management, shared recipe/invoice drafts and settings, and explicit restoration of conflicting draft revisions.
+- Backups: local-first IndexedDB, retryable Supabase sync, complete ZIP export/import including receipt bytes, original JSON imports, standalone logger exports and raw recovery downloads.
+- Offline: production shell and all generated React bundles cached together. Optional browser Background Sync uses the current session; Web Push uses a separate server scheduler.
+- Sheets: original preview → explicit approval → write → read-back workflow, posting locks and a manager reconciliation ledger for uncertain attempts.
 
-## Deploy to Vercel
+## Deploy
 
-1. Create or choose the Supabase project.
-2. Run the **entire** [SQL migration](supabase/migrations/20261110000000_vision_parity.sql) in its SQL Editor. This creates the tables, views, RLS, transactional sync function and private `vision-attachments` bucket. Run once in a project where these objects do not already exist.
-3. In Supabase **Authentication → Users**, create the kitchen email/password account. Use the same account on devices that should share records. The app does not expose public registration.
-4. Import this repository in Vercel. Set framework **Next.js**, root directory **repository root**, Node **22.x** or another supported release meeting package.json, install command **npm ci**, build command **npm run build**. Leave output directory at its framework default. Do not select `archive/sites-original` as the root.
-5. Add these values under **Vercel → Project → Settings → Environment Variables**, for the deployment environments you will use:
+1. Create or choose a Supabase project.
+2. Run these SQL files in order, using the entire file each time:
+   - [Initial schema](supabase/migrations/20261110000000_vision_parity.sql).
+   - [Shared kitchens and operations](supabase/migrations/20261110010000_shared_kitchens_and_operations.sql).
 
-| Variable                    | Value                                            | Exposure                                   |
-| --------------------------- | ------------------------------------------------ | ------------------------------------------ |
-| `SUPABASE_URL`              | Supabase project URL                             | Public configuration                       |
-| `SUPABASE_ANON_KEY`         | Supabase anon or publishable API key             | Public configuration                       |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role or server secret API key   | Server only, never prefix with NEXT_PUBLIC |
-| `SUPABASE_STORAGE_BUCKET`   | `vision-attachments`                             | Optional, defaults to this name            |
-| `VISION_ALLOWED_EMAILS`     | Optional comma-separated approved account emails | Server allowlist                           |
+   If the initial schema was already applied, run **only the second file**. These migrations are not intended to be replayed manually after success.
 
-6. Deploy/redeploy after saving environment variables. Open the application, go to **Sync & backup**, sign in, and leave automatic backup enabled. Set Vercel Deployment Protection if the entire hosted shell/catalog should also require access control.
+3. Create email/password users in **Supabase Authentication → Users**. There is no public registration screen. Each user initially has a personal kitchen. Sign in as its owner, open **Sync & backup → Kitchen access**, and add other existing users by email. Use individual accounts for attribution.
+4. Import this repository into Vercel. Select **Next.js**, repository root, Node **22.x** or a supported version satisfying `package.json`, install `npm ci`, build `npm run build`, and the default framework output directory.
+5. Set these environment variables in the Vercel project, then redeploy:
 
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are also accepted as aliases, but the names in the table avoid build-time public-variable substitution. `/api/config` returns only the public URL/key, bucket and setup booleans. It never returns the service key or Google private key.
+| Variable                    | Value                                      | Visibility                          |
+| --------------------------- | ------------------------------------------ | ----------------------------------- |
+| `SUPABASE_URL`              | Project URL                                | Public configuration                |
+| `SUPABASE_ANON_KEY`         | Anon or publishable key                    | Public configuration                |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role or server secret key          | Server only                         |
+| `SUPABASE_STORAGE_BUCKET`   | Optional, defaults to `vision-attachments` | Public bucket name, private objects |
+| `VISION_ALLOWED_EMAILS`     | Optional comma-separated login allowlist   | Server only                         |
 
-Supabase credentials alone enable local + Supabase logging. Google Sheets needs the additional optional setup below because Vercel does not provide the original ChatGPT/Sites connector capability.
+6. Open **Sync & backup**, sign in and sync. The existing owner's records remain in the same scope when upgrading. Other kitchen members access that scope through membership.
 
-## Keep the original workbook integration
+Never prefix a service key with `NEXT_PUBLIC`. Runtime `/api/config` returns only public configuration and feature flags. Credentials are not hard-coded. The application builds without credentials and displays setup status. `.env.example` lists optional integrations too.
 
-1. Enable Google Sheets API for a Google Cloud service account.
-2. Share the existing Vision workbook with that service account email as Editor.
-3. Add these Vercel environment variables and redeploy:
+## Roles and data
 
-| Variable                       | Value                                                                      |
-| ------------------------------ | -------------------------------------------------------------------------- |
-| `VISION_SPREADSHEET_ID`        | The Vision workbook ID from its URL                                        |
-| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Service account email                                                      |
-| `GOOGLE_PRIVATE_KEY`           | Its private key, actual newlines or literal `\n` accepted; server only     |
-| `VISION_SHEETS_ALLOWED_EMAILS` | Comma-separated Supabase login emails permitted to use the shared workbook |
+| Role    | Access                                                                                                                |
+| ------- | --------------------------------------------------------------------------------------------------------------------- |
+| Viewer  | Read shared records and pull backups                                                                                  |
+| Staff   | Log waste/wings, save working records, perform production                                                             |
+| Manager | Staff access plus prices, catalog changes, stock receipt/count/transfer/reversal, invoice approval and reconciliation |
+| Owner   | Manager access plus kitchen naming and membership management                                                          |
 
-The same workbook headings/tabs from the artifact are required: `MASTER INGREDIENTS`, `01_INGREDIENTS`, `99_LISTS`, `09_WASTE_LOG`, `08_INVENTORY_TXNS`, `04_RECIPES`, `05_RECIPE_COMPONENTS`. No workbook ID or credentials are hard-coded in the active application.
+Sheets also requires the explicit email allowlist below. Revoked membership blocks future server access; data already downloaded onto a device cannot be remotely erased.
 
-Sheets writes require explicit approval. Waste creates a negative stock movement; recipes do not consume stock. Corrections to already-posted waste and uncertain posting attempts need manager reconciliation. The Vercel app coordinates its own users with a workbook-wide Postgres lock; it cannot coordinate with the separate original Sites/D1 app. Avoid concurrent posting from both installations.
+The immutable `vision_events` journal retains IDs, entity IDs, timestamps and complete original payloads. Original record views remain available. The forward migration adds `vision_workspaces`, `vision_memberships`, `vision_drafts`, `vision_operations`, `vision_stock_movements`, `vision_purchase_receipts`, `vision_push_subscriptions`, `vision_reminders` and `vision_reconciliations`, plus stock balances. `created_by` attributes new events to individual users. Historical records retain their original payloads.
 
-## Supabase parity model
+Member reads use RLS and security-invoker views. Browser writes go through authenticated server routes and bounded service-role RPCs. The server validates tokens with Supabase Auth and checks the selected kitchen and role. Stock operations use database locks, immutable operation IDs and atomic rollback. Waste with a known measured base quantity deducts stock once; voids reverse it once. Unmeasured waste cannot fabricate a stock conversion.
 
-Every original logged event retains its ID, entity ID, timestamp and complete JSON payload. The immutable journal preserves history rather than replacing it with only a current row.
+Shared draft revisions include parent revisions. Concurrent branches stay visible until an operator chooses a revision. Kitchen switching preserves each kitchen's unsynced local work separately. Full backups do not reuse another account's cloud acknowledgments or sync cursor.
 
-| Object                                      | Purpose                                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------------------ |
-| `vision_events`                             | All eight logged event kinds and immutable payloads                            |
-| `vision_catalog_items`                      | Reference ingredients, including the bundled catalog and live source refreshes |
-| `vision_files`                              | Receipt metadata, hashes and owner-scoped Storage paths                        |
-| `vision_postings`                           | Sheets attempting/confirmed/reconciliation ledger                              |
-| `vision_locks`                              | Workbook-wide posting lock                                                     |
-| `vision_ingredients`                        | Current catalog with reviewed ingredient events overlaid                       |
-| `vision_catalog`                            | Reference source catalog without review overlays                               |
-| `vision_waste`, `vision_waste_voids`        | Waste and append-only corrections                                              |
-| `vision_inventory_txns`                     | Derived negative waste movements, with void status; no invented opening stock  |
-| `vision_wing_batches`, `vision_wing_events` | Batch definitions and all individual readings/actions                          |
-| `vision_recipe_revisions`                   | Every draft/finalized revision and retained cost snapshot                      |
-| `vision_invoices`                           | Every invoice intake/review-copy record                                        |
-| `vision_settings`                           | Latest employee/reason settings                                                |
+## Receipt OCR
 
-All owner data is scoped to the Supabase Auth user. Reporting views use security-invoker mode, so authenticated SQL/API reads retain RLS. Direct browser writes to the journal, metadata, posting ledger and locks are not granted. Server routes validate the bearer token with Supabase Auth, derive the owner themselves, and use the server-only service key. Transactional RPCs are executable only by service_role.
+Deploy the included [receipt extraction service](services/receipt-ocr/README.md), or supply an adapter with its JSON contract. Set `VISION_OCR_API_URL` and `VISION_OCR_API_KEY` in Vercel. The included Docker service performs Tesseract OCR, supports native/scanned PDFs, and can use an optional OpenAI-compatible model for structured extraction. It can run independently of the Vercel application.
 
-There is no distributed transaction between device storage, Supabase and Google Sheets. Each new record saves locally, then queues for Supabase; acknowledgment marks it backed up. A failed sync keeps the record pending for retry. Sheets posting remains a separate explicitly approved operation, and an uncertain write is never automatically replayed.
+Optional `VISION_VERIFY_API_URL` and `VISION_VERIFY_API_KEY` configure a second verification call. Without it, schema and arithmetic checks still run. The editor shows candidates and warnings, requires acceptance into the draft, and leaves unknown quantities, units and prices blank. Review mappings and package measurements before approving an invoice receipt. A receipt uses the net line subtotal, not tax-inclusive guesses. Natural invoice identity and review lineage prevent duplicate stock receipts; reverse the earlier receipt before receiving a corrected one.
 
-## Offline and migrating records
+## Background work and notifications
 
-Install/add the app to the home screen after an online visit. The service worker caches the React shell and loaded assets, excludes APIs and uses a content-derived cache version on each build. Cloud sync and Sheets calls require connectivity and the app open. Browser/OS suspension can delay timers and sounds.
+The production service worker caches the complete build asset manifest. An initial online visit and successful offline installation are required. APIs are excluded from the cache. Open-app sync remains available independently of browser Background Sync.
 
-Use the original app’s JSON export, then import from **Sync & backup**. For full Vision backups from the old Site, check the explicit ownership-transfer checkbox. It keeps source IDs/timestamps/payloads but does not reuse the old Site owner, sync cursor or acknowledged-ID list. Imported records must receive new Supabase acknowledgments. Conflicting immutable IDs fail instead of being overwritten. Standalone waste and wing backups are supported too.
+Enable background backup in **Sync & backup**. Browser support and operating-system scheduling vary. The worker stores only the current short-lived access token, not a refresh token. Open the app to refresh an expired session. Browser storage remains sensitive and device access should be controlled.
 
-A domain change cannot silently copy browser storage. JSON backups contain records, not receipt bytes. Keep original photos/PDFs and upload/attach them again if their bytes are not in this origin’s IndexedDB. Do not run the original and new application simultaneously against the same local IndexedDB origin during migration. Keep exports until the new account’s backup is verified.
+For closed-app wing reminders:
 
-## Development
+1. Run `npm run push:keys` locally and set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` and a strong `CRON_SECRET` in Vercel. Keep the private key and cron secret private.
+2. Schedule an authenticated GET to `/api/cron/reminders`, with `Authorization: Bearer <CRON_SECRET>`. `vercel.cron.example.json` is an inactive example; configure a supported schedule in your hosting plan. Alternatively schedule `scripts/run-reminders.mjs` with private `VISION_URL` and `CRON_SECRET` environment variables on your server.
+3. Enable background reminders in the app and grant browser notification permission. Each browser must subscribe separately.
+
+Delivery uses standard Web Push, membership checks and deduplication. Connectivity, scheduler frequency and device restrictions affect delivery times. Operational food-safety checks still require actual measurements.
+
+## Google Sheets
+
+Enable the Google Sheets API, create a service account and share the Vision workbook with that account as Editor. Set these Vercel variables:
+
+| Variable                       | Value                                                 |
+| ------------------------------ | ----------------------------------------------------- |
+| `VISION_SPREADSHEET_ID`        | Workbook ID                                           |
+| `GOOGLE_SERVICE_ACCOUNT_EMAIL` | Service account email                                 |
+| `GOOGLE_PRIVATE_KEY`           | Private key, actual newlines or literal `\n` accepted |
+| `VISION_SHEETS_ALLOWED_EMAILS` | Comma-separated permitted Supabase login emails       |
+
+Required original tabs are `MASTER INGREDIENTS`, `01_INGREDIENTS`, `99_LISTS`, `09_WASTE_LOG`, `08_INVENTORY_TXNS`, `04_RECIPES` and `05_RECIPE_COMPONENTS`. Sheets posting remains separately approved. Finalizing a recipe does not consume stock; a production operation does.
+
+There is no distributed transaction across IndexedDB, Supabase and Google. Local writes queue for cloud acknowledgement. Uncertain workbook writes require manager reconciliation and are never automatically replayed. The reconciliation screen records the manager's evidence and resolution. The app's workbook lock cannot coordinate with a separate running original Sites installation.
+
+## Moving devices and recovery
+
+Use complete ZIP backup to include records and receipt originals. Imports bound the uncompressed archive size and validate required entries before restoration. JSON-only and original standalone logger backups remain supported. For old full Site backups, use the explicit ownership-transfer option. Cross-origin browser storage cannot be copied silently, so export from the original app first. Older JSON exports do not contain photo bytes; retain and attach those originals separately.
+
+Keep exports until the new kitchen's backup is verified. Raw recovery downloads are available even when saved application state cannot be opened. Browser/OS eviction can remove local data, so local storage alone is not a backup.
+
+## Development and verification
 
 ```bash
 npm ci
 cp .env.example .env.local
-# Fill .env.local with development values, never commit it.
+# Fill only local development secrets, never commit them.
 npm run dev
-```
-
-The app builds without credentials so Vercel can compile before setup is complete; missing configuration is displayed on Sync. Credentials are read at request time.
-
-```bash
-npm test
-npm run typecheck
-npm run build
-# Or all three:
 npm run verify
 ```
 
-Tests execute the Postgres migration against PGlite and check RLS, immutable conflicts/rollback, pagination, catalog overlays and workbook locking. Other tests retain original costing/conversion assertions and cover waste snapshots, correction handling and wing deadlines/conflicts. `npm run verify` also starts the production server and checks the React shell, public-only configuration, authentication on data APIs, foreign-origin write rejection and the versioned offline worker. Production Supabase Auth/Storage and Google writes require configured external services and are not claimed tested without them.
+`verify` runs calculation and database tests, type checking, the production build, HTTP smoke tests, and a production-route integration harness using PostgreSQL in PGlite and fixture Auth/Storage/OCR services. Tests cover memberships, RLS, draft branching, stock rollback, duplicate receipts, count races, waste reversal, reconciliation and offline asset availability. The OCR service has separate Python tests exercising real Tesseract and PDF extraction.
 
-## Source layout
+Fixture integration tests do not prove live Supabase, Google, model-provider or Web Push delivery. Those require the deployment's actual credentials and configured external services. No production database or workbook is provisioned by committing this repository.
 
-- `components/kitchen/`: React screens, reusable fields/dialogs and state/sync provider. No iframe or innerHTML-based UI rendering in the active app.
-- `lib/core/`: preserved pure calculation/validation functions from the artifact, consumed by React and tests.
-- `lib/local.ts`: IndexedDB and presentation helpers.
-- `lib/server.ts`, `lib/validation.ts`: server configuration, identity and request validation.
-- `app/api/`: Vercel-compatible Next route handlers.
-- `lib/vision-connectors.ts`: Google service-account transport, fixed to the configured workbook.
-- `lib/vision-store.ts`: a bounded adapter for the preserved posting planner’s known storage operations.
-- `supabase/migrations/`: deployable PostgreSQL schema.
-- `archive/sites-original/`: complete tracked source snapshot of the remixed artifact, including its original scripts, logger HTML, assets and Cloudflare schema. This archive is excluded from TypeScript checks and is not served as the application.
+## Source map
 
-The active runtime has no Cloudflare binding dependency. The archive retains the original platform-specific code for provenance and comparison.
+| Path                                                               | Responsibility                                            |
+| ------------------------------------------------------------------ | --------------------------------------------------------- |
+| `app/`                                                             | Next.js shell and server route handlers                   |
+| `components/kitchen/`                                              | React screens, touch controls, state provider and sync    |
+| `lib/core/`                                                        | Pure recipe, waste, wing, costing, draft and backup logic |
+| `lib/local.ts`                                                     | IndexedDB and presentation helpers                        |
+| `lib/server.ts`, `lib/validation.ts`                               | Authentication, role checks and validated requests        |
+| `lib/vision-connectors.ts`, `lib/vision-store.ts`                  | Google transport and preserved posting planner adapter    |
+| `scripts/background-worker.js`, `scripts/build-service-worker.mjs` | Background backup and production offline packaging        |
+| `supabase/migrations/`                                             | Schema, RLS and transactional operations                  |
+| `services/receipt-ocr/`                                            | Independently deployable receipt OCR service              |
+| `tests/`, `scripts/*production.mjs`                                | Database, logic and production-route checks               |
+| `archive/sites-original/`                                          | Complete original artifact source for comparison          |
+
+Styling lives in `app/globals.css` and the preserved scoped logger CSS. The active UI uses React components rather than iframe rendering. Next.js handles routing/server endpoints and Vercel packaging; React handles interactive views; TypeScript checks interfaces. Supabase stores shared records and private receipt objects. The original Cloudflare bindings are required only by the archived source.

@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
+import { wingsBackup } from "@/lib/core/backups.mjs";
 import WingCore from "@/lib/core/wings.js";
 import { useKitchen } from "./provider";
 import { Modal, Field } from "./ui";
@@ -432,6 +433,7 @@ export function Wings() {
             <div className="top-actions">
               <span className="local-badge">Saved on this device</span>
               <button
+                className="quiet"
                 onClick={() => {
                   setSound(!sound);
                   update((s: any) => ({ ...s, wingSound: !sound })).catch(
@@ -443,6 +445,7 @@ export function Wings() {
                 {sound ? "Sound on" : "Sound off"}
               </button>
               <button
+                className="quiet"
                 aria-label="Records and backup"
                 onClick={() => setModal({ kind: "manager" })}
               >
@@ -1125,7 +1128,10 @@ export function Wings() {
         <footer className="footer">
           <strong>Good Food = Good Mood</strong>
           <span> Keep this tab open for on-screen reminders and sound.</span>
-          <button onClick={() => setModal({ kind: "guidance" })}>
+          <button
+            className="text-button"
+            onClick={() => setModal({ kind: "guidance" })}
+          >
             Temperature rules
           </button>
         </footer>
@@ -1147,7 +1153,12 @@ export function Wings() {
               <div className="actions">
                 <button
                   onClick={() =>
-                    backup().catch((e: Error) => notify(e.message))
+                    Promise.resolve(
+                      download(
+                        "Scottys_Wing_Backup_" + today() + ".json",
+                        wingsBackup(state),
+                      ),
+                    ).catch((e: Error) => notify(e.message))
                   }
                 >
                   Download backup
@@ -1200,6 +1211,47 @@ export function Wings() {
           ) : modal.kind === "guidance" ? (
             <>
               <h2>Temperature rules</h2>
+              <div className="numbered-steps">
+                <p>
+                  <strong>Cook:</strong> verify ≥74°C for 15 seconds in several
+                  large wings on each tray. The 20-minute oven timer is a
+                  reference, not a passing result.
+                </p>
+                <p>
+                  <strong>Cool:</strong> the source workflow uses oven-out as
+                  the conservative clock start. Rack and transfer time count.
+                </p>
+                <p>
+                  <strong>Per-tray deadlines:</strong> ≤20°C by oven-out + 2
+                  hours, then ≤4°C by the earlier of that tray’s first
+                  qualifying ≤20°C time + 4 hours or oven-out + 6 hours.
+                </p>
+                <p>
+                  <strong>Keep chilled:</strong> ≤4°C. The 72-hour use-by is the
+                  source application’s house limit for never-frozen stock.
+                </p>
+              </div>
+              <p className="notice">
+                Missing or late checks remain on hold. Add earlier readings only
+                from real records; corrections preserve originals.
+              </p>
+              <p className="source-links">
+                <a
+                  href="https://www.hamilton.ca/sites/default/files/2024-07/Food-Handler-Training-Manual-ENGLISH-APRIL2023.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ontario food-handler guide referenced by the original artifact
+                </a>
+                <br />
+                <a
+                  href="https://www.hpph.ca/health-topics/food-and-nutrition/safe-food-handling/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Huron Perth Public Health
+                </a>
+              </p>
               <p>
                 Encoded workflow: record ≥74°C for 15 seconds for the cook;
                 ≤20°C by oven-out + 2 hours; ≤4°C by the earlier of the first

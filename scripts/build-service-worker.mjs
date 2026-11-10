@@ -1,21 +1,48 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-const h = createHash("sha256");
+import { build } from "esbuild";
+const assets = [
+  "/",
+  "/manifest.webmanifest",
+  "/vision-icon.svg",
+  "/vision-icon-192.png",
+  "/vision-icon-512.png",
+  "/ingredient-cache.json",
+];
 async function walk(dir) {
-  for (const entry of (await readdir(dir, { withFileTypes: true })).sort(
-    (a, b) => a.name.localeCompare(b.name),
-  )) {
-    const p = dir + "/" + entry.name;
-    if (entry.isDirectory()) await walk(p);
-    else h.update(p).update(await readFile(p));
+  for (const e of await readdir(dir, { withFileTypes: true })) {
+    const path = dir + "/" + e.name;
+    if (e.isDirectory()) await walk(path);
+    else if (!e.name.endsWith(".map"))
+      assets.push("/_next/static/" + path.slice(".next/static/".length));
   }
 }
-for (const d of ["app", "components", "lib"]) await walk(d);
-h.update(await readFile("scripts/service-worker.template.js"));
+await walk(".next/static");
+assets.sort();
+const hash = createHash("sha256")
+  .update(JSON.stringify(assets))
+  .update(await readFile("scripts/service-worker.template.js"))
+  .update(await readFile("scripts/background-worker.js"))
+  .digest("hex")
+  .slice(0, 16);
+const code = (await readFile("scripts/service-worker.template.js", "utf8"))
+  .replace("__BUILD_HASH__", hash)
+  .replace("__PRECACHE__", JSON.stringify(assets));
+await build({
+  stdin: {
+    contents: code,
+    resolveDir: process.cwd() + "/scripts",
+    sourcefile: "service-worker.js",
+  },
+  bundle: true,
+  format: "iife",
+  platform: "browser",
+  target: "es2022",
+  outfile: "public/sw.js",
+  minify: true,
+});
 await writeFile(
-  "public/sw.js",
-  (await readFile("scripts/service-worker.template.js", "utf8")).replace(
-    "__BUILD_HASH__",
-    h.digest("hex").slice(0, 16),
-  ),
+  "public/offline-manifest.json",
+  JSON.stringify({ cache: "vision-react-" + hash, assets }, null, 2),
 );
+console.log("Precached React shell and " + assets.length + " assets.");

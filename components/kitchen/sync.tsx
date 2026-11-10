@@ -2,6 +2,10 @@
 import React, { useState } from "react";
 import { useKitchen } from "./provider";
 import { Heading, Field, Modal } from "./ui";
+import { Reconciliation } from "./reconciliation";
+import { Background } from "./background";
+import { Workspaces } from "./workspaces";
+import { exportComplete, importComplete } from "@/lib/complete-backup";
 import { date } from "@/lib/local";
 export function SyncView({ onPost }: { onPost: (id: string) => void }) {
   const {
@@ -14,8 +18,10 @@ export function SyncView({ onPost }: { onPost: (id: string) => void }) {
       update,
       sync,
       backup,
+      request,
       importBackup,
       notify,
+      exportRecovery,
     } = useKitchen(),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
@@ -147,6 +153,24 @@ export function SyncView({ onPost }: { onPost: (id: string) => void }) {
           <h2>Import & backup</h2>
           <div className="actions">
             <button
+              onClick={() =>
+                exportComplete(state, request).catch((e: Error) =>
+                  notify(e.message),
+                )
+              }
+            >
+              Export records and receipt files (.zip)
+            </button>
+            <button
+              onClick={() =>
+                exportRecovery().catch((e: Error) => notify(e.message))
+              }
+            >
+              Export original saved data
+            </button>
+          </div>
+          <div className="actions">
+            <button
               onClick={() => backup().catch((e: Error) => notify(e.message))}
             >
               Download data backup
@@ -159,11 +183,14 @@ export function SyncView({ onPost }: { onPost: (id: string) => void }) {
             id="backupFile"
             hidden
             type="file"
-            accept="application/json,.json"
+            accept="application/json,.json,.zip,application/zip"
             onChange={(e) => {
               const f = e.target.files?.[0];
               if (f)
-                importBackup(f, rebind).catch((e: Error) => notify(e.message));
+                (f.name.toLowerCase().endsWith(".zip")
+                  ? importComplete(f, importBackup, rebind)
+                  : importBackup(f, rebind)
+                ).catch((e: Error) => notify(e.message));
               e.target.value = "";
             }}
           />
@@ -215,6 +242,9 @@ export function SyncView({ onPost }: { onPost: (id: string) => void }) {
           </p>
         </section>
         <section className="panel wide">
+          <Workspaces />
+          <Reconciliation />
+          <Background />
           <h2>Add Vision to the tablet home screen</h2>
           <ol>
             <li>
